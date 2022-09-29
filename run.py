@@ -76,8 +76,50 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(widget)
         self.show()
 
+    def reloadAnnotation(self):
+        print("Reload Annotation")
+        fileAnnotation= open(OUTPUT + '/' + str(self.imageName).replace('png', 'log'), "r")
+        #print(str(self.imageName))
+        fileAnnotation.readline()
+        fileAnnotation.readline()
+
+        while True:
+            line = fileAnnotation.readline()
+            if not line:
+                break
+            print(line.strip())
+            import re
+
+            match = re.findall(r'[^\s,]+', line.strip())
+            x1 = match[0]
+            x2 = match[1]
+            y1= match[2]
+            y2 = match[3]
+
+            self.line_color = 'orange'
+            self.sc.figure.gca().add_artist(
+                patches.mlines.Line2D([int(x1), int(x1)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',
+                                      linewidth=1))
+            self.line_color = 'orange'
+            self.sc.figure.gca().add_artist(
+                patches.mlines.Line2D([int(x1), int(x2)], [int(y1), int(y1)], color=self.line_color, linestyle='solid',
+                                      linewidth=1))
+            self.line_color = 'orange'
+            self.sc.figure.gca().add_artist(
+                patches.mlines.Line2D([int(x2), int(x2)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',
+                                      linewidth=1))
+            self.line_color = 'orange'
+            self.sc.figure.gca().add_artist(
+                patches.mlines.Line2D([int(x1), int(x2)], [int(y2), int(y2)], color=self.line_color, linestyle='solid',
+                                      linewidth=1))
+
+            self.sc.draw()
+
+
+        fileAnnotation.close()
 
     def buttonAddAnnotation_clicked(self):
+        self.reloadAnnotation()
         print("Button Add Annotation clicked")
         fileIndex = open(INDEX_FILE, "r")
         index = int(fileIndex.read())
