@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import QPushButton
 from os import listdir
 from os.path import isfile, join
 from pylab import imread
+from matplotlib import patches
 
 INPUT = '/Users/xle/Desktop/Shooting'
 OUTPUT = '/Users/xle/Desktop/Annotation'
@@ -50,9 +51,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
         #sc.figure.gca().axis('off')
 
-
+        self.line_color = 'orange'
         
-        self.imageName = 'test.jpg'
+        self.imageName = 'test3.png'
         image = imread(self.imageName)
         self.sc.figure.gca().imshow(image)
 
@@ -88,16 +89,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Récupération des coordonnées
         x1 = str(int(self.sc.figure.axes[0].viewLim._points[0, 0]))
-        print(x1)
+        #print(x1)
         x2 = str(int(self.sc.figure.axes[0].viewLim._points[1, 0]))
-        print(x2)
+        #print(x2)
         y1 = str(int(self.sc.figure.axes[0].viewLim._points[0, 1]))
-        print(y1)
+        #print(y1)
         y2 = str(int(self.sc.figure.axes[0].viewLim._points[1, 1]))
-        print(y2)
+        #print(y2)
 
         # Update du fichier d'annotation
-        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace('jpeg', 'log'), "w")
+        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace('png', 'log'), "w")
         fileAnnotation.write(str(self.imageName + '\n'))
         fileAnnotation.write('x1,x2,y1,y2' + '\n')
         fileAnnotation.write(x1 + ',' + x2 + ',' + y1 + ',' + y2)
@@ -116,6 +117,17 @@ class MainWindow(QtWidgets.QMainWindow):
         fileAnnotation.close()
 
         #self.sc.figure.gca().clear()
+        self.sc.draw()
+
+        self.line_color = 'orange'
+        self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x1)], [int(y1), int(y2)], color=self.line_color, linestyle='solid', linewidth=1))
+        self.line_color = 'orange'
+        self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x2)], [int(y1), int(y1)], color=self.line_color, linestyle='solid',linewidth=1))
+        self.line_color = 'orange'
+        self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x2), int(x2)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',linewidth=1))
+        self.line_color = 'orange'
+        self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x2)], [int(y2), int(y2)], color=self.line_color, linestyle='solid',linewidth=1))
+
         self.sc.draw()
 
 
