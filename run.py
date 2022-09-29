@@ -81,14 +81,40 @@ class MainWindow(QtWidgets.QMainWindow):
         fileIndex = open(INDEX_FILE, "r")
         index = int(fileIndex.read())
         fileIndex.close()
-        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace('jpeg', 'txt') , "w")
-        fileAnnotation.write("Hello")
+
+
+        #self.imageName = 'test2.jpg'
+        #self.sc.figure.gca().imshow(imread(self.imageName))
+
+        # Récupération des coordonnées
+        x1 = str(int(self.sc.figure.axes[0].viewLim._points[0, 0]))
+        print(x1)
+        x2 = str(int(self.sc.figure.axes[0].viewLim._points[1, 0]))
+        print(x2)
+        y1 = str(int(self.sc.figure.axes[0].viewLim._points[0, 1]))
+        print(y1)
+        y2 = str(int(self.sc.figure.axes[0].viewLim._points[1, 1]))
+        print(y2)
+
+        # Update du fichier d'annotation
+        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace('jpeg', 'log'), "w")
+        fileAnnotation.write(str(self.imageName + '\n'))
+        fileAnnotation.write('x1,x2,y1,y2' + '\n')
+        fileAnnotation.write(x1 + ',' + x2 + ',' + y1 + ',' + y2)
         fileAnnotation.close()
-        print(self.imageName)
-        self.imageName = 'test2.jpg'
-        self.sc.figure.gca().imshow(imread(self.imageName))
-        print(self.imageName)
-        print(self.sc.figure.axes[0].viewLim._points[1, 1])
+
+        # Update du fichier d'annotation au format yolo
+        # class x_center y_center width height
+        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace('jpeg', 'txt'), "w")
+        fileAnnotation.write(str(self.imageName + '\n'))
+        classe = 1
+        x_center = str((int(x1) + int(x2) ) / 2)
+        y_center = str((int(y1) + int(y2)) / 2)
+        width = str(abs(int(x2) - int(x1)))
+        height = str(abs(int(y2) - int(y1)))
+        fileAnnotation.write(str(classe) + ' ' + x_center + ' ' + y_center + ' ' + width + ' ' + height)
+        fileAnnotation.close()
+
         #self.sc.figure.gca().clear()
         self.sc.draw()
 
