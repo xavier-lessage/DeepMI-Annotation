@@ -16,6 +16,7 @@ INPUT = '/Users/xle/Desktop/Shooting'
 OUTPUT = '/Users/xle/Desktop/Annotation'
 INDEX_FILE = '/Users/xle/Desktop/Annotation/index.log'
 INDEX = 1
+EXT = 'png'
 
 class MplCanvas(FigureCanvasQTAgg):
 
@@ -41,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         buttonPrevious.clicked.connect(buttonPrevious_clicked)
 
         buttonAddAnnotation = QPushButton()
-        buttonAddAnnotation.setText("Add Annotation")
+        buttonAddAnnotation.setText("Orange Annotation")
         buttonAddAnnotation.clicked.connect(self.buttonAddAnnotation_clicked)
 
         buttonClear = QPushButton()
@@ -78,7 +79,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def reloadAnnotation(self):
         print("Reload Annotation")
-        fileAnnotation= open(OUTPUT + '/' + str(self.imageName).replace('png', 'log'), "r")
+        fileAnnotation= open(OUTPUT + '/' + str(self.imageName).replace(EXT, 'log'), "r")
         #print(str(self.imageName))
         fileAnnotation.readline()
         fileAnnotation.readline()
@@ -91,28 +92,27 @@ class MainWindow(QtWidgets.QMainWindow):
             import re
 
             match = re.findall(r'[^\s,]+', line.strip())
-            x1 = match[0]
-            x2 = match[1]
-            y1= match[2]
-            y2 = match[3]
+            classe = match[0]
+            x1 = match[1]
+            x2 = match[2]
+            y1= match[3]
+            y2 = match[4]
 
-            self.line_color = 'orange'
+            if classe == 1:
+                self.line_color = 'orange'
+
             self.sc.figure.gca().add_artist(
                 patches.mlines.Line2D([int(x1), int(x1)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',
                                       linewidth=1))
-            self.line_color = 'orange'
             self.sc.figure.gca().add_artist(
                 patches.mlines.Line2D([int(x1), int(x2)], [int(y1), int(y1)], color=self.line_color, linestyle='solid',
                                       linewidth=1))
-            self.line_color = 'orange'
             self.sc.figure.gca().add_artist(
                 patches.mlines.Line2D([int(x2), int(x2)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',
                                       linewidth=1))
-            self.line_color = 'orange'
             self.sc.figure.gca().add_artist(
                 patches.mlines.Line2D([int(x1), int(x2)], [int(y2), int(y2)], color=self.line_color, linestyle='solid',
                                       linewidth=1))
-
             self.sc.draw()
 
 
@@ -125,6 +125,8 @@ class MainWindow(QtWidgets.QMainWindow):
         index = int(fileIndex.read())
         fileIndex.close()
 
+        classColor = 'orange'
+        classCode = '1'
 
         #self.imageName = 'test2.jpg'
         #self.sc.figure.gca().imshow(imread(self.imageName))
@@ -139,40 +141,41 @@ class MainWindow(QtWidgets.QMainWindow):
         y2 = str(int(self.sc.figure.axes[0].viewLim._points[1, 1]))
         #print(y2)
 
+
+
         # Update du fichier d'annotation
-        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace('png', 'log'), "w")
+        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'log'), "w")
         fileAnnotation.write(str(self.imageName + '\n'))
-        fileAnnotation.write('x1,x2,y1,y2' + '\n')
-        fileAnnotation.write(x1 + ',' + x2 + ',' + y1 + ',' + y2)
+        fileAnnotation.write('classColor,x1,x2,y1,y2' + '\n')
+        fileAnnotation.write(classColor + ',' + x1 + ',' + x2 + ',' + y1 + ',' + y2)
         fileAnnotation.close()
 
         # Update du fichier d'annotation au format yolo
         # class x_center y_center width height
-        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace('jpeg', 'txt'), "w")
+        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "w")
         fileAnnotation.write(str(self.imageName + '\n'))
-        classe = 1
+
         x_center = str((int(x1) + int(x2) ) / 2)
         y_center = str((int(y1) + int(y2)) / 2)
         width = str(abs(int(x2) - int(x1)))
         height = str(abs(int(y2) - int(y1)))
-        fileAnnotation.write(str(classe) + ' ' + x_center + ' ' + y_center + ' ' + width + ' ' + height)
+        fileAnnotation.write(str(classCode) + ' ' + x_center + ' ' + y_center + ' ' + width + ' ' + height)
         fileAnnotation.close()
 
         #self.sc.figure.gca().clear()
         self.sc.draw()
 
-        self.line_color = 'orange'
+        if classColor == 'orange':
+            self.line_color = 'orange'
+
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x1)], [int(y1), int(y2)], color=self.line_color, linestyle='solid', linewidth=1))
-        self.line_color = 'orange'
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x2)], [int(y1), int(y1)], color=self.line_color, linestyle='solid',linewidth=1))
-        self.line_color = 'orange'
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x2), int(x2)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',linewidth=1))
-        self.line_color = 'orange'
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x2)], [int(y2), int(y2)], color=self.line_color, linestyle='solid',linewidth=1))
 
         self.sc.draw()
 
-
+    def AnnotationGeneration(self, ColorCode):
 
 def buttonNext_clicked():
         print("Button Next clicked")
