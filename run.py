@@ -12,7 +12,7 @@ from os.path import isfile, join
 from pylab import imread
 from matplotlib import patches
 
-INPUT = '/Users/xle/Desktop/Shooting'
+INPUT = '/Users/xle/Desktop/Angiographies/Disease'
 OUTPUT = '/Users/xle/Desktop/Annotation'
 INDEX_FILE = '/Users/xle/Desktop/Annotation/index.log'
 INDEX = 1
@@ -33,29 +33,38 @@ class MainWindow(QtWidgets.QMainWindow):
 
         buttonNext = QPushButton()
         buttonNext.setText("Next")
-        buttonNext.clicked.connect(buttonNext_clicked)
+        buttonNext.clicked.connect(self.buttonNext_clicked)
         #button1.move(64, 32)
         #widget.setGeometry(50, 50, 320, 200)
 
         buttonPrevious = QPushButton()
         buttonPrevious.setText("Previous")
-        buttonPrevious.clicked.connect(buttonPrevious_clicked)
+        buttonPrevious.clicked.connect(self.buttonPrevious_clicked)
 
-        buttonAddAnnotation = QPushButton()
-        buttonAddAnnotation.setText("Orange Annotation")
-        buttonAddAnnotation.clicked.connect(self.buttonAddAnnotation_clicked)
+        buttonRedAnnotation = QPushButton()
+        buttonRedAnnotation.setText("Red Annotation")
+        buttonRedAnnotation.clicked.connect(self.buttonRedAnnotation_clicked)
+
+        buttonOrangeAnnotation = QPushButton()
+        buttonOrangeAnnotation.setText("Orange Annotation")
+        buttonOrangeAnnotation.clicked.connect(self.buttonOrangeAnnotation_clicked)
+
+        buttonGreenAnnotation = QPushButton()
+        buttonGreenAnnotation.setText("Green Annotation")
+        buttonGreenAnnotation.clicked.connect(self.buttonGreenAnnotation_clicked)
 
         buttonClear = QPushButton()
         buttonClear.setText("Clear Annotation(s)")
-        buttonClear.clicked.connect(buttonClear_clicked)
+        buttonClear.clicked.connect(self.buttonClear_clicked)
 
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
         #sc.figure.gca().axis('off')
 
         self.line_color = 'orange'
-        
-        self.imageName = 'test3.png'
-        image = imread(self.imageName)
+
+        self.loadingFiles()
+        #self.imageName = ''
+        image = imread(INPUT + '/' + self.imageName)
         self.sc.figure.gca().imshow(image)
 
         # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
@@ -65,7 +74,9 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(toolbar)
         layout.addWidget(buttonPrevious)
         layout.addWidget(buttonNext)
-        layout.addWidget(buttonAddAnnotation)
+        layout.addWidget(buttonRedAnnotation)
+        layout.addWidget(buttonOrangeAnnotation)
+        layout.addWidget(buttonGreenAnnotation)
         layout.addWidget(buttonClear)
         layout.addWidget(self.sc)
 
@@ -79,59 +90,76 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def reloadAnnotation(self):
         print("Reload Annotation")
-        fileAnnotation= open(OUTPUT + '/' + str(self.imageName).replace(EXT, 'log'), "r")
-        #print(str(self.imageName))
-        fileAnnotation.readline()
-        fileAnnotation.readline()
+        if os.path.exists(OUTPUT + '/' + str(self.imageName).replace(EXT, 'log')):
 
-        while True:
-            line = fileAnnotation.readline()
-            if not line:
-                break
-            print(line.strip())
-            import re
+            fileAnnotation= open(OUTPUT + '/' + str(self.imageName).replace(EXT, 'log'), "r")
+            #print(str(self.imageName))
+            fileAnnotation.readline()
+            fileAnnotation.readline()
 
-            match = re.findall(r'[^\s,]+', line.strip())
-            classe = match[0]
-            x1 = match[1]
-            x2 = match[2]
-            y1= match[3]
-            y2 = match[4]
+            while True:
+                line = fileAnnotation.readline()
+                if not line:
+                    break
+                print(line.strip())
+                import re
 
-            if classe == 1:
-                self.line_color = 'orange'
+                match = re.findall(r'[^\s,]+', line.strip())
+                classe = match[0]
+                x1 = match[1]
+                x2 = match[2]
+                y1= match[3]
+                y2 = match[4]
 
-            self.sc.figure.gca().add_artist(
-                patches.mlines.Line2D([int(x1), int(x1)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',
-                                      linewidth=1))
-            self.sc.figure.gca().add_artist(
-                patches.mlines.Line2D([int(x1), int(x2)], [int(y1), int(y1)], color=self.line_color, linestyle='solid',
-                                      linewidth=1))
-            self.sc.figure.gca().add_artist(
-                patches.mlines.Line2D([int(x2), int(x2)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',
-                                      linewidth=1))
-            self.sc.figure.gca().add_artist(
-                patches.mlines.Line2D([int(x1), int(x2)], [int(y2), int(y2)], color=self.line_color, linestyle='solid',
-                                      linewidth=1))
-            self.sc.draw()
+                if classe == 'red':
+                    self.line_color = 'red'
+                if classe == 'orange':
+                    self.line_color = 'orange'
+                if classe == 'green':
+                    self.line_color = 'green'
+
+                self.sc.figure.gca().add_artist(
+                    patches.mlines.Line2D([int(x1), int(x1)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',
+                                          linewidth=1))
+                self.sc.figure.gca().add_artist(
+                    patches.mlines.Line2D([int(x1), int(x2)], [int(y1), int(y1)], color=self.line_color, linestyle='solid',
+                                          linewidth=1))
+                self.sc.figure.gca().add_artist(
+                    patches.mlines.Line2D([int(x2), int(x2)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',
+                                          linewidth=1))
+                self.sc.figure.gca().add_artist(
+                    patches.mlines.Line2D([int(x1), int(x2)], [int(y2), int(y2)], color=self.line_color, linestyle='solid',
+                                          linewidth=1))
+                self.sc.draw()
 
 
-        fileAnnotation.close()
+            fileAnnotation.close()
 
-    def buttonAddAnnotation_clicked(self):
-        self.reloadAnnotation()
-        print("Button Add Annotation clicked")
+    def buttonRedAnnotation_clicked(self):
+
+        print("Button Red Annotation clicked")
+        self.AnnotationGeneration('red', '1')
+        #self.reloadAnnotation()
+
+    def buttonOrangeAnnotation_clicked(self):
+
+        print("Button Orange Annotation clicked")
+        self.AnnotationGeneration('orange', '2')
+        #self.reloadAnnotation()
+
+    def buttonGreenAnnotation_clicked(self):
+
+        print("Button Green Annotation clicked")
+        self.AnnotationGeneration('green', '3')
+        #self.reloadAnnotation()
+
+    def AnnotationGeneration(self,classColor, classCode):
+
         fileIndex = open(INDEX_FILE, "r")
         index = int(fileIndex.read())
         fileIndex.close()
 
-        classColor = 'orange'
-        classCode = '1'
-
-        #self.imageName = 'test2.jpg'
-        #self.sc.figure.gca().imshow(imread(self.imageName))
-
-        # Récupération des coordonnées
+        # Retrieval of coordinates
         x1 = str(int(self.sc.figure.axes[0].viewLim._points[0, 0]))
         #print(x1)
         x2 = str(int(self.sc.figure.axes[0].viewLim._points[1, 0]))
@@ -143,30 +171,42 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 
-        # Update du fichier d'annotation
-        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'log'), "w")
-        fileAnnotation.write(str(self.imageName + '\n'))
-        fileAnnotation.write('classColor,x1,x2,y1,y2' + '\n')
-        fileAnnotation.write(classColor + ',' + x1 + ',' + x2 + ',' + y1 + ',' + y2)
+        # Update annotation file
+
+        if os.path.exists(OUTPUT + "/" + fichiers[index].replace(EXT, 'log')):
+            fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'log'), "a")
+        else:
+            fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'log'), "w")
+            fileAnnotation.write(str(self.imageName + '\n'))
+            fileAnnotation.write('classColor,x1,x2,y1,y2' + '\n')
+
+        fileAnnotation.write(classColor + ',' + x1 + ',' + x2 + ',' + y1 + ',' + y2 + '\n')
         fileAnnotation.close()
 
-        # Update du fichier d'annotation au format yolo
+        # Update annotation file (yolo format)
         # class x_center y_center width height
-        fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "w")
-        fileAnnotation.write(str(self.imageName + '\n'))
+        if os.path.exists(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt')):
+            fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "a")
+        else:
+            fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "w")
+            fileAnnotation.write(str(self.imageName + '\n'))
 
         x_center = str((int(x1) + int(x2) ) / 2)
         y_center = str((int(y1) + int(y2)) / 2)
         width = str(abs(int(x2) - int(x1)))
         height = str(abs(int(y2) - int(y1)))
-        fileAnnotation.write(str(classCode) + ' ' + x_center + ' ' + y_center + ' ' + width + ' ' + height)
+        fileAnnotation.write(str(classCode) + ' ' + x_center + ' ' + y_center + ' ' + width + ' ' + height + '\n')
         fileAnnotation.close()
 
         #self.sc.figure.gca().clear()
         self.sc.draw()
 
+        if classColor == 'red':
+            self.line_color = 'red'
         if classColor == 'orange':
             self.line_color = 'orange'
+        if classColor == 'green':
+            self.line_color = 'green'
 
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x1)], [int(y1), int(y2)], color=self.line_color, linestyle='solid', linewidth=1))
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x2)], [int(y1), int(y1)], color=self.line_color, linestyle='solid',linewidth=1))
@@ -175,45 +215,78 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.sc.draw()
 
-    def AnnotationGeneration(self, ColorCode):
+    def buttonNext_clicked(self):
+            print("Button Next clicked")
+            fileIndex = open(INDEX_FILE, "r")
+            index = int(fileIndex.read())
+            index = index + 1
+            print(fichiers[index])
+            fileIndex = open(INDEX_FILE, "w")
+            fileIndex.write(str(index))
+            fileIndex.close()
+            self.imageName =  fichiers[index]
+            image = imread(INPUT + '/' + self.imageName)
+            self.sc.figure.gca().clear()
+            self.sc.figure.gca().imshow(image)
+            self.reloadAnnotation()
+            self.sc.draw()
 
-def buttonNext_clicked():
-        print("Button Next clicked")
+
+    def buttonPrevious_clicked(self):
+        print("Button Previous clicked")
         fileIndex = open(INDEX_FILE, "r")
         index = int(fileIndex.read())
-        index = index + 1
+        index = index - 1
         print(fichiers[index])
         fileIndex = open(INDEX_FILE, "w")
         fileIndex.write(str(index))
         fileIndex.close()
-
-
-def buttonPrevious_clicked():
-    print("Button Previous clicked")
-    fileIndex = open(INDEX_FILE, "r")
-    index = int(fileIndex.read())
-    index = index - 1
-    print(fichiers[index])
-    fileIndex = open(INDEX_FILE, "w")
-    fileIndex.write(str(index))
-    fileIndex.close()
+        self.imageName = fichiers[index]
+        image = imread(INPUT + '/' + self.imageName)
+        self.sc.figure.gca().clear()
+        self.sc.figure.gca().imshow(image)
+        self.reloadAnnotation()
+        self.sc.draw()
 
 
 
 
+    def buttonClear_clicked(self):
+        print("Button Clear clicked")
+        fileIndex = open(INDEX_FILE, "r")
+        index = int(fileIndex.read())
+        fileIndex.close()
+        fileTxtToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'txt')
+        if os.path.exists(fileTxtToDel):
+            os.remove(fileTxtToDel)
+        fileLogToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'log')
+        if os.path.exists(fileLogToDel):
+            os.remove(fileLogToDel)
+        self.sc.figure.gca().clear()
+        image = imread(INPUT + '/' + self.imageName)
+        self.sc.figure.gca().imshow(image)
+        self.reloadAnnotation()
+        self.sc.draw()
 
-def buttonClear_clicked():
-    print("Button Clear clicked")
-    fileIndex = open(INDEX_FILE, "r")
-    index = int(fileIndex.read())
-    fileIndex.close()
-    fileToDel = OUTPUT + "/" + fichiers[index].replace('jpeg', 'txt')
-    if os.path.exists(fileToDel):
-        os.remove(fileToDel)
+    def loadingFiles(self):
 
+        # Load last image or fist for the first run
+        if os.path.exists(INDEX_FILE):
+            fileIndex = open(INDEX_FILE, "r")
+            index = int(fileIndex.read())
+        else:
+            fileIndex = open(INDEX_FILE, "w")
+            fileIndex.write(str(1))
+            index = 1
+
+        fileIndex.close()
+        self.imageName = fichiers[index]
+        print(fichiers[index])
+        fileIndex.close()
+        self.reloadAnnotation()
 
 if __name__ == "__main__":
-
+    # List all files
     fichiers = [f for f in listdir(INPUT) if isfile(join(INPUT, f))]
     app = QtWidgets.QApplication(sys.argv)
     w = MainWindow()
