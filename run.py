@@ -73,15 +73,16 @@ class MainWindow(QtWidgets.QMainWindow):
         # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
         toolbar = NavigationToolbar(self.sc, self)
 
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(toolbar)
-        layout.addWidget(buttonPrevious)
-        layout.addWidget(buttonNext)
-        layout.addWidget(buttonRedAnnotation)
-        layout.addWidget(buttonOrangeAnnotation)
-        layout.addWidget(buttonGreenAnnotation)
-        layout.addWidget(buttonClear)
-        layout.addWidget(self.sc)
+
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(toolbar,0,0,1,0)
+        layout.addWidget(buttonPrevious,3,0)
+        layout.addWidget(buttonNext,3,1)
+        layout.addWidget(buttonRedAnnotation,3,2)
+        layout.addWidget(buttonOrangeAnnotation,3,3)
+        layout.addWidget(buttonGreenAnnotation,3,4)
+        layout.addWidget(buttonClear, 3,5)
+        layout.addWidget(self.sc,2,0,1,0)
 
         # Create a placeholder widget to hold our toolbar and canvas.
         widget = QtWidgets.QWidget()
