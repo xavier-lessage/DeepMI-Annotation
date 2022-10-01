@@ -11,6 +11,7 @@ from os import listdir
 from os.path import isfile, join
 from pylab import imread
 from matplotlib import patches
+from PyQt6.QtCore import Qt
 
 INPUT = '/Users/xle/Desktop/Angiographies/Disease'
 OUTPUT = '/Users/xle/Desktop/Annotation'
@@ -24,6 +25,8 @@ class MplCanvas(FigureCanvasQTAgg):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
+
+
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -58,7 +61,7 @@ class MainWindow(QtWidgets.QMainWindow):
         buttonClear.clicked.connect(self.buttonClear_clicked)
 
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-        #sc.figure.gca().axis('off')
+        self.sc.figure.gca().axis('off')
 
         self.line_color = 'orange'
 
@@ -87,6 +90,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(widget)
         self.show()
+
+
+
 
     def reloadAnnotation(self):
         print("Reload Annotation")
@@ -130,6 +136,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.sc.figure.gca().add_artist(
                     patches.mlines.Line2D([int(x1), int(x2)], [int(y2), int(y2)], color=self.line_color, linestyle='solid',
                                           linewidth=1))
+                self.sc.figure.gca().axis('off')
                 self.sc.draw()
 
 
@@ -199,6 +206,7 @@ class MainWindow(QtWidgets.QMainWindow):
         fileAnnotation.close()
 
         #self.sc.figure.gca().clear()
+        self.sc.figure.gca().axis('off')
         self.sc.draw()
 
         if classColor == 'red':
@@ -213,6 +221,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x2), int(x2)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',linewidth=1))
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x2)], [int(y2), int(y2)], color=self.line_color, linestyle='solid',linewidth=1))
 
+        self.sc.figure.gca().axis('off')
         self.sc.draw()
 
     def buttonNext_clicked(self):
@@ -229,6 +238,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sc.figure.gca().clear()
             self.sc.figure.gca().imshow(image)
             self.reloadAnnotation()
+            self.sc.figure.gca().axis('off')
             self.sc.draw()
 
 
@@ -246,6 +256,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc.figure.gca().clear()
         self.sc.figure.gca().imshow(image)
         self.reloadAnnotation()
+        self.sc.figure.gca().axis('off')
         self.sc.draw()
 
 
@@ -266,6 +277,7 @@ class MainWindow(QtWidgets.QMainWindow):
         image = imread(INPUT + '/' + self.imageName)
         self.sc.figure.gca().imshow(image)
         self.reloadAnnotation()
+        self.sc.figure.gca().axis('off')
         self.sc.draw()
 
     def loadingFiles(self):
@@ -284,6 +296,29 @@ class MainWindow(QtWidgets.QMainWindow):
         print(fichiers[index])
         fileIndex.close()
         self.reloadAnnotation()
+
+    def keyPressEvent(self, e):
+
+        if e.key() == Qt.Key.Key_Escape.value:
+            self.close()
+        if e.key() == Qt.Key.Key_Space.value:
+            self.buttonNext_clicked()
+        if e.key() == Qt.Key.Key_P.value:
+            self.buttonPrevious_clicked()
+        if e.key() == Qt.Key.Key_N.value:
+            self.buttonNext_clicked()
+        if e.key() == Qt.Key.Key_R.value:
+            self.buttonRedAnnotation_clicked()
+        if e.key() == Qt.Key.Key_O.value:
+            self.buttonOrangeAnnotation_clicked()
+        if e.key() == Qt.Key.Key_G.value:
+            self.buttonGreenAnnotation_clicked()
+        if e.key() == Qt.Key.Key_A.value:
+            self.buttonRedAnnotation_clicked()
+        if e.key() == Qt.Key.Key_Q.value:
+            self.buttonOrangeAnnotation_clicked()
+        if e.key() == Qt.Key.Key_W.value:
+            self.buttonGreenAnnotation_clicked()
 
 if __name__ == "__main__":
     # List all files
