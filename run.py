@@ -76,18 +76,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
         layout = QtWidgets.QGridLayout()
         layout.addWidget(toolbar,0,0,1,0)
-        layout.addWidget(buttonPrevious,3,0)
-        layout.addWidget(buttonNext,3,1)
-        layout.addWidget(buttonRedAnnotation,3,2)
-        layout.addWidget(buttonOrangeAnnotation,3,3)
-        layout.addWidget(buttonGreenAnnotation,3,4)
-        layout.addWidget(buttonClear, 3,5)
+        layout.addWidget(buttonClear, 3, 0)
+        layout.addWidget(buttonPrevious,3,1)
+        layout.addWidget(buttonNext,3,2)
+        layout.addWidget(buttonRedAnnotation,3,3)
+        layout.addWidget(buttonOrangeAnnotation,3,4)
+        layout.addWidget(buttonGreenAnnotation,3,5)
         layout.addWidget(self.sc,2,0,1,0)
 
         # Create a placeholder widget to hold our toolbar and canvas.
         widget = QtWidgets.QWidget()
 
         widget.setLayout(layout)
+
+        # set the title
+        self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+
+        #self.sc.figure.gca().axis('off')
 
         self.setCentralWidget(widget)
         self.show()
@@ -222,6 +227,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x2), int(x2)], [int(y1), int(y2)], color=self.line_color, linestyle='solid',linewidth=1))
         self.sc.figure.gca().add_artist(patches.mlines.Line2D([int(x1), int(x2)], [int(y2), int(y2)], color=self.line_color, linestyle='solid',linewidth=1))
 
+        #self.sc.figure.gca().axis('off')
+        #self.sc.draw()
+
+        self.sc.figure.gca().clear()
+        image = imread(INPUT + '/' + self.imageName)
+        self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+        self.sc.figure.gca().imshow(image)
+        self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
 
@@ -234,8 +247,9 @@ class MainWindow(QtWidgets.QMainWindow):
             fileIndex = open(INDEX_FILE, "w")
             fileIndex.write(str(index))
             fileIndex.close()
-            self.imageName =  fichiers[index]
+            self.imageName = fichiers[index]
             image = imread(INPUT + '/' + self.imageName)
+            self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
             self.sc.figure.gca().clear()
             self.sc.figure.gca().imshow(image)
             self.reloadAnnotation()
@@ -254,6 +268,7 @@ class MainWindow(QtWidgets.QMainWindow):
         fileIndex.close()
         self.imageName = fichiers[index]
         image = imread(INPUT + '/' + self.imageName)
+        self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
         self.sc.figure.gca().clear()
         self.sc.figure.gca().imshow(image)
         self.reloadAnnotation()
@@ -297,16 +312,15 @@ class MainWindow(QtWidgets.QMainWindow):
         print(fichiers[index])
         fileIndex.close()
         self.reloadAnnotation()
+        self.sc.figure.tight_layout(h_pad=None)
 
     def keyPressEvent(self, e):
 
         if e.key() == Qt.Key.Key_Escape.value:
             self.close()
-        if e.key() == Qt.Key.Key_Space.value:
-            self.buttonNext_clicked()
-        if e.key() == Qt.Key.Key_P.value:
+        if e.key() == Qt.Key.Key_Left.value:
             self.buttonPrevious_clicked()
-        if e.key() == Qt.Key.Key_N.value:
+        if e.key() == Qt.Key.Key_Right.value:
             self.buttonNext_clicked()
         if e.key() == Qt.Key.Key_R.value:
             self.buttonRedAnnotation_clicked()
