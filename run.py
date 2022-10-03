@@ -9,7 +9,7 @@ from matplotlib.figure import Figure
 from PyQt6.QtWidgets import QPushButton
 from os import listdir
 from os.path import isfile, join
-from pylab import imread
+from matplotlib.pyplot import imread
 from matplotlib import patches
 from PyQt6.QtCore import Qt
 
@@ -68,11 +68,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.loadingFiles()
         #self.imageName = ''
         image = imread(INPUT + '/' + self.imageName)
-        self.sc.figure.gca().imshow(image)
+        self.sc.figure.gca().imshow(image,cmap="gray")
 
         # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
         toolbar = NavigationToolbar(self.sc, self)
 
+        #self.sc.figure.set_facecolor('darkgrey')
         self.sc.figure.set_facecolor('black')
 
         layout = QtWidgets.QGridLayout()
@@ -236,7 +237,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc.figure.gca().clear()
         image = imread(INPUT + '/' + self.imageName)
         self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
-        self.sc.figure.gca().imshow(image)
+        self.sc.figure.gca().imshow(image,cmap="gray")
         self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
@@ -254,7 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
             image = imread(INPUT + '/' + self.imageName)
             self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
             self.sc.figure.gca().clear()
-            self.sc.figure.gca().imshow(image)
+            self.sc.figure.gca().imshow(image,cmap="gray")
             self.reloadAnnotation()
             self.sc.figure.gca().axis('off')
             self.sc.draw()
@@ -273,7 +274,7 @@ class MainWindow(QtWidgets.QMainWindow):
         image = imread(INPUT + '/' + self.imageName)
         self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
         self.sc.figure.gca().clear()
-        self.sc.figure.gca().imshow(image)
+        self.sc.figure.gca().imshow(image,cmap="gray")
         self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
@@ -294,7 +295,7 @@ class MainWindow(QtWidgets.QMainWindow):
             os.remove(fileLogToDel)
         self.sc.figure.gca().clear()
         image = imread(INPUT + '/' + self.imageName)
-        self.sc.figure.gca().imshow(image)
+        self.sc.figure.gca().imshow(image,cmap="gray")
         self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
