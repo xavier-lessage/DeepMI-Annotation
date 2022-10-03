@@ -73,8 +73,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
         toolbar = NavigationToolbar(self.sc, self)
 
+        self.sc.figure.set_facecolor('black')
 
         layout = QtWidgets.QGridLayout()
+
         layout.addWidget(toolbar,0,0,1,0)
         layout.addWidget(buttonClear, 3, 0)
         layout.addWidget(buttonPrevious,3,1)
@@ -84,9 +86,10 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(buttonGreenAnnotation,3,5)
         layout.addWidget(self.sc,2,0,1,0)
 
+
+
         # Create a placeholder widget to hold our toolbar and canvas.
         widget = QtWidgets.QWidget()
-
         widget.setLayout(layout)
 
         # set the title
@@ -314,6 +317,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reloadAnnotation()
         self.sc.figure.tight_layout(h_pad=None)
 
+
+
     def keyPressEvent(self, e):
 
         if e.key() == Qt.Key.Key_Escape.value:
@@ -321,6 +326,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if e.key() == Qt.Key.Key_Left.value:
             self.buttonPrevious_clicked()
         if e.key() == Qt.Key.Key_Right.value:
+            self.buttonNext_clicked()
+        if e.key() == Qt.Key.Key_Space.value:
             self.buttonNext_clicked()
         if e.key() == Qt.Key.Key_R.value:
             self.buttonRedAnnotation_clicked()
