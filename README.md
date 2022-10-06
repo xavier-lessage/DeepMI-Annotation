@@ -37,6 +37,12 @@ a) File in Yolo format
   20160527-pt-c1b44ea247-std-91c870fac4-seq-18-ang-p26.9-p25.7-f-00041.png
 
   1 276.0 93.0 42 36
+  
+  3 151.0 113.0 128 84
+  
+  1 186.0 107.5 28 27
+  
+  2 261.5 124.5 29 21
 
 
 b) Log file
@@ -46,7 +52,15 @@ b) Log file
   classColor,x1,x2,y1,y2
   
   red,255,297,111,75
-
+  
+  green,87,215,155,71
+  
+  red,172,200,121,94
+  
+  orange,247,276,135,114
+  
+  
+  
 
 ## Screenshot 
 
