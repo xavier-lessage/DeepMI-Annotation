@@ -64,10 +64,8 @@ b) Log file
 
 ## Screenshot 
 
-<img width="1091" alt="image" src="https://user-images.githubusercontent.com/25364805/193655681-213bb97b-c72d-4760-9a58-40328f83da40.png">
-  
-<img width="1064" alt="image" src="https://user-images.githubusercontent.com/25364805/194230382-193f777d-6e6d-4a75-9c87-4cf667dc8ad4.png">
-  
+ 
+<img width="1064" alt="image" src="https://user-images.githubusercontent.com/25364805/194230382-193f777d-6e6d-4a75-9c87-4cf667dc8ad4.png">  
 <img width="1064" alt="image" src="https://user-images.githubusercontent.com/25364805/194231066-fffb760e-c8ad-4d38-a163-78a7adead0d7.png">
 
 
