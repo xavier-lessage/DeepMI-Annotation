@@ -11,7 +11,7 @@ Edit run.py and specifying the following fields:
 
 INPUT = '/Users/xle/Desktop/Angiographies/Disease' --> Location of images to be annotated
 
-OUTPUT = '/Users/xle/Desktop/Annotation' --> Emplacement des fichiers d'annotations
+OUTPUT = '/Users/xle/Desktop/Annotation' --> Location of annotation files
 
 INDEX_FILE = '/Users/xle/Desktop/Annotation/index.log' --> Name of application log file
 
