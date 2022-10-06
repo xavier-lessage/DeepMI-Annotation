@@ -41,11 +41,11 @@ a) File in Yolo format
 
 b) Log file
 
-  20160128-pt-1f07f8d876-std-f80788813b-seq-3-ang-n26.5-p28.5-f-00064.png
-
+  20160527-pt-c1b44ea247-std-91c870fac4-seq-18-ang-p26.9-p25.7-f-00041.png
+  
   classColor,x1,x2,y1,y2
-
-  red,154,209,39,3
+  
+  red,255,297,111,75
 
 
 ## Screenshot 
