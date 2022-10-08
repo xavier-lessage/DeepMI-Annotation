@@ -17,8 +17,7 @@ INDEX_FILE = '/Users/xle/Desktop/Annotation/index.log' --> Name of application l
 
 EXT = 'png' --> Format of the images 
 
-Using the <Zoom> button, zoom in on the area to be annotated and click on the desired annotation (Red, Orange, Green).
-Two annotation files will be generated, a classic log file and another one, in Yolo format.
+Using the "zoom" button on the toolbar, zoom in on the area to be annotated and then click on the desired annotation (Red, Orange, Green). Two annotation files will be generated, a classic log file and another, in Yolo format.
 
 ## Keyboard shortcuts
 
