@@ -13,11 +13,12 @@ from matplotlib.pyplot import imread
 from matplotlib import patches
 from PyQt6.QtCore import Qt
 
-INPUT = '/Users/xle/Desktop/Angiographies/Disease'
-OUTPUT = '/Users/xle/Desktop/Annotation'
+# INPUT = '/Users/xle/Desktop/Angiographies/Disease'
+INPUT = '/Users/xle/Desktop/pare-brise/'
+OUTPUT = '/Users/xle/Desktop/Annotation-pb'
 INDEX_FILE = '/Users/xle/Desktop/Annotation/index.log'
 INDEX = 1
-EXT = 'png'
+EXT = 'bmp'
 
 class MplCanvas(FigureCanvasQTAgg):
 
@@ -94,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
         widget.setLayout(layout)
 
         # set the title
-        self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+        self.setWindowTitle('DeepMI-Annotation ' + '' + self.imageName)
 
         #self.sc.figure.gca().axis('off')
 
