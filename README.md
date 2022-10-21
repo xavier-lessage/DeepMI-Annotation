@@ -3,7 +3,6 @@
 
 
 This tool is part of the Deep Medical Imaging Suite in the context of AI innovation in medical imaging.
-MIT License.
 
 ## How to use this tools?
 
