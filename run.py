@@ -14,11 +14,11 @@ from matplotlib import patches
 from PyQt6.QtCore import Qt
 
 # INPUT = '/Users/xle/Desktop/Angiographies/Disease'
-INPUT = '/Users/xle/Desktop/pare-brise/'
-OUTPUT = '/Users/xle/Desktop/Annotation-pb'
-INDEX_FILE = '/Users/xle/Desktop/Annotation/index.log'
+INPUT = '/Users/xle/Desktop/these/mammo/in/negatifs'
+OUTPUT = '/Users/xle/Desktop/these/mammo/out/'
+INDEX_FILE = '/Users/xle/Desktop/these/mammo/log/index.log'
 INDEX = 1
-EXT = 'bmp'
+EXT = 'png'
 
 class MplCanvas(FigureCanvasQTAgg):
 
