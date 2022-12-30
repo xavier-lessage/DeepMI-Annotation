@@ -35,6 +35,7 @@ if __name__ == "__main__":
 
                 if isfile(join(DATA_IN, p)):
                     shutil.copyfile(join(DATA_IN, p), join(DATA_OUT, p))
+                    shutil.copyfile(join(INPUT, f), join(DATA_OUT, f))
 
 
 
