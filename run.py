@@ -63,6 +63,13 @@ class MainWindow(QtWidgets.QMainWindow):
         buttonClear.setText("Clear Annotation(s)")
         buttonClear.clicked.connect(self.buttonClear_clicked)
 
+        buttonRedDetect= QPushButton()
+        buttonRedDetect.setText("Red Detection")
+        buttonOrangeDetect = QPushButton()
+        buttonOrangeDetect.setText("Orange Detection")
+        buttonGreenDetect = QPushButton()
+        buttonGreenDetect.setText("Green Detection")
+
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
         self.sc.figure.gca().axis('off')
 
@@ -81,14 +88,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
         layout = QtWidgets.QGridLayout()
 
-        layout.addWidget(toolbar,0,0,1,0)
-        layout.addWidget(buttonClear, 3, 0)
-        layout.addWidget(buttonPrevious,3,1)
-        layout.addWidget(buttonNext,3,2)
-        layout.addWidget(buttonRedAnnotation,3,3)
-        layout.addWidget(buttonOrangeAnnotation,3,4)
-        layout.addWidget(buttonGreenAnnotation,3,5)
-        layout.addWidget(self.sc,2,0,1,0)
+        layout.addWidget(toolbar, 0, 0, 1, 0)
+        layout.addWidget(buttonClear, 3, 1)
+
+        layout.addWidget(buttonRedAnnotation, 3, 3)
+        layout.addWidget(buttonOrangeAnnotation, 3, 4)
+        layout.addWidget(buttonGreenAnnotation, 3, 5)
+        layout.addWidget(self.sc, 2, 0, 1, 0)
+        layout.addWidget(buttonPrevious, 3, 0)
+        layout.addWidget(buttonNext, 3, 2)
+        #layout.addWidget(buttonDetect, 4, 3, 1, 3)
+        layout.addWidget(buttonRedDetect, 4, 3)
+        layout.addWidget(buttonOrangeDetect, 4, 4)
+        layout.addWidget(buttonGreenDetect, 4, 5)
 
 
 
@@ -172,6 +184,7 @@ class MainWindow(QtWidgets.QMainWindow):
         print("Button Green Annotation clicked")
         self.AnnotationGeneration('green', '3')
         #self.reloadAnnotation()
+
 
     def AnnotationGeneration(self, classColor, classCode):
 
@@ -296,8 +309,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
-
-
 
 
     def buttonClear_clicked(self):
