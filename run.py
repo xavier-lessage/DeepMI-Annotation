@@ -64,11 +64,11 @@ class MainWindow(QtWidgets.QMainWindow):
         buttonClear.clicked.connect(self.buttonClear_clicked)
 
         buttonRedDetect= QPushButton()
-        buttonRedDetect.setText("Detection")
+        buttonRedDetect.setText("Red Detection")
         buttonOrangeDetect = QPushButton()
-        buttonOrangeDetect.setText("Detection")
+        buttonOrangeDetect.setText("Orange Detection")
         buttonGreenDetect = QPushButton()
-        buttonGreenDetect.setText("Detection")
+        buttonGreenDetect.setText("Green Detection")
 
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
         self.sc.figure.gca().axis('off')
