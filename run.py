@@ -1,5 +1,6 @@
 import os
 import sys
+import PIL
 import matplotlib
 matplotlib.use('Qt5Agg')
 
@@ -12,6 +13,7 @@ from os.path import isfile, join
 from matplotlib.pyplot import imread
 from matplotlib import patches
 from PyQt6.QtCore import Qt
+
 
 # INPUT = '/Users/xle/Desktop/Angiographies/Disease'
 INPUT = '/Users/xle/Desktop/these/mammo/in/negatifs'
@@ -69,7 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.loadingFiles()
         #self.imageName = ''
         image = imread(INPUT + '/' + self.imageName)
-        self.sc.figure.gca().imshow(image,cmap="gray")
+        self.sc.figure.gca().imshow(image, cmap="gray")
 
         # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
         toolbar = NavigationToolbar(self.sc, self)
@@ -171,7 +173,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.AnnotationGeneration('green', '3')
         #self.reloadAnnotation()
 
-    def AnnotationGeneration(self,classColor, classCode):
+    def AnnotationGeneration(self, classColor, classCode):
 
         fileIndex = open(INDEX_FILE, "r")
         index = int(fileIndex.read())
@@ -186,6 +188,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #print(y1)
         y2 = str(int(self.sc.figure.axes[0].viewLim._points[1, 1]))
         #print(y2)
+
 
 
 
@@ -207,13 +210,27 @@ class MainWindow(QtWidgets.QMainWindow):
             fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "a")
         else:
             fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "w")
-            fileAnnotation.write(str(self.imageName + '\n'))
+            #fileAnnotation.write(str(self.imageName + '\n'))
 
         x_center = str((int(x1) + int(x2) ) / 2)
         y_center = str((int(y1) + int(y2)) / 2)
         width = str(abs(int(x2) - int(x1)))
         height = str(abs(int(y2) - int(y1)))
-        fileAnnotation.write(str(classCode) + ' ' + x_center + ' ' + y_center + ' ' + width + ' ' + height + '\n')
+
+        img = PIL.Image.open(join(INPUT, self.imageName))
+
+        # fetching the dimensions
+        wid, hgt = img.size
+
+        # Normalisation
+
+        x_center_n = str(round(float(x_center) / float(wid), 3))
+        y_center_n = str(round(float(y_center) / float(hgt), 3))
+        width_n = str(round(float(width) / float(wid), 3))
+        height_n = str(round(float(height) / float(hgt), 3))
+
+        #fileAnnotation.write(str(classCode) + ' ' + x_center + ' ' + y_center + ' ' + width + ' ' + height + '\n')
+        fileAnnotation.write(str(classCode) + ' ' + x_center_n + ' ' + y_center_n + ' ' + width_n + ' ' + height_n + '\n')
         fileAnnotation.close()
 
         #self.sc.figure.gca().clear()
@@ -238,7 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc.figure.gca().clear()
         image = imread(INPUT + '/' + self.imageName)
         self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
-        self.sc.figure.gca().imshow(image,cmap="gray")
+        self.sc.figure.gca().imshow(image, cmap="gray")
         self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
@@ -256,7 +273,7 @@ class MainWindow(QtWidgets.QMainWindow):
             image = imread(INPUT + '/' + self.imageName)
             self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
             self.sc.figure.gca().clear()
-            self.sc.figure.gca().imshow(image,cmap="gray")
+            self.sc.figure.gca().imshow(image, cmap="gray")
             self.reloadAnnotation()
             self.sc.figure.gca().axis('off')
             self.sc.draw()
@@ -343,6 +360,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.buttonOrangeAnnotation_clicked()
         if e.key() == Qt.Key.Key_W.value:
             self.buttonGreenAnnotation_clicked()
+
 
 if __name__ == "__main__":
     # List all files
