@@ -76,7 +76,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.line_color = 'orange'
 
         self.loadingFiles()
-        #self.imageName = ''
+
         image = imread(INPUT + '/' + self.imageName)
         self.sc.figure.gca().imshow(image, cmap="gray")
 
