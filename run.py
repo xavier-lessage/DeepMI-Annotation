@@ -89,14 +89,14 @@ class MainWindow(QtWidgets.QMainWindow):
         layout = QtWidgets.QGridLayout()
 
         layout.addWidget(toolbar, 0, 0, 1, 0)
-        layout.addWidget(buttonClear, 3, 1)
+        layout.addWidget(buttonClear, 3, 0)
 
         layout.addWidget(buttonRedAnnotation, 3, 3)
         layout.addWidget(buttonOrangeAnnotation, 3, 4)
         layout.addWidget(buttonGreenAnnotation, 3, 5)
         layout.addWidget(self.sc, 2, 0, 1, 0)
-        layout.addWidget(buttonPrevious, 3, 0)
-        layout.addWidget(buttonNext, 3, 2)
+        layout.addWidget(buttonPrevious, 4, 1)
+        layout.addWidget(buttonNext, 4, 2)
         #layout.addWidget(buttonDetect, 4, 3, 1, 3)
         layout.addWidget(buttonRedDetect, 4, 3)
         layout.addWidget(buttonOrangeDetect, 4, 4)
