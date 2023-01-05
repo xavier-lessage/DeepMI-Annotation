@@ -1,7 +1,9 @@
 import os
 import sys
 import PIL
+import shutil
 import matplotlib
+
 matplotlib.use('Qt5Agg')
 
 from PyQt6 import QtWidgets
@@ -15,10 +17,14 @@ from matplotlib import patches
 from PyQt6.QtCore import Qt
 
 
-# INPUT = '/Users/xle/Desktop/Angiographies/Disease'
-INPUT = '/Users/xle/Desktop/these/mammo/in/negatifs'
-OUTPUT = '/Users/xle/Desktop/these/mammo/out/'
-INDEX_FILE = '/Users/xle/Desktop/these/mammo/log/index.log'
+INPUT = '/Users/xle/Dataset/angiographies/Disease'
+OUTPUT = '/Users/xle/Dataset/angiographies//out/'
+INDEX_FILE = '/Users/xle/Dataset/angiographies/log/index.log'
+
+
+#INPUT = '/Users/xle/Desktop/these/mammo/in/negatifs'
+#OUTPUT = '/Users/xle/Desktop/these/mammo/out/'
+#INDEX_FILE = '/Users/xle/Desktop/these/mammo/log/index.log'
 INDEX = 1
 EXT = 'png'
 
@@ -273,6 +279,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc.figure.gca().axis('off')
         self.sc.draw()
 
+        # Copy of the source file
+        shutil.copyfile(join(INPUT, self.imageName), join(OUTPUT, self.imageName))
+
     def buttonNext_clicked(self):
             print("Button Next clicked")
             fileIndex = open(INDEX_FILE, "r")
@@ -322,6 +331,12 @@ class MainWindow(QtWidgets.QMainWindow):
         fileLogToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'log')
         if os.path.exists(fileLogToDel):
             os.remove(fileLogToDel)
+        filePngToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'png')
+        if os.path.exists(filePngToDel):
+            os.remove(filePngToDel)
+        fileJpgToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'jpg')
+        if os.path.exists(fileJpgToDel):
+            os.remove(filePngToDel)
         self.sc.figure.gca().clear()
         image = imread(INPUT + '/' + self.imageName)
         self.sc.figure.gca().imshow(image,cmap="gray")
