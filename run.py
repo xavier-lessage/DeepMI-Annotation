@@ -9,7 +9,7 @@ matplotlib.use('Qt5Agg')
 from PyQt6 import QtWidgets
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from PyQt6.QtWidgets import QPushButton
+from PyQt6.QtWidgets import QPushButton, QRadioButton
 from os import listdir
 from os.path import isfile, join
 from matplotlib.pyplot import imread
@@ -18,6 +18,7 @@ from PyQt6.QtCore import Qt
 
 
 INPUT = '/Users/xle/Dataset/angiographies/Disease'
+#INPUT = '/Users/xle/Dataset/angiographies/out'
 OUTPUT = '/Users/xle/Dataset/angiographies//out/'
 INDEX_FILE = '/Users/xle/Dataset/angiographies/log/index.log'
 
@@ -76,6 +77,15 @@ class MainWindow(QtWidgets.QMainWindow):
         buttonGreenDetect = QPushButton()
         buttonGreenDetect.setText("Green Detection")
 
+        buttonRadioAnnotation = QRadioButton('Annotation')
+        buttonRadioAnnotation.setChecked(True)
+        buttonRadioAnnotation.clicked.connect(self.buttonRadioAnnotation_clicked)
+        buttonRadioReview = QRadioButton('Review')
+        buttonRadioReview.setChecked(False)
+        buttonRadioReview.clicked.connect(self.buttonRadioReview_clicked)
+
+
+
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
         self.sc.figure.gca().axis('off')
 
@@ -101,8 +111,12 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(buttonOrangeAnnotation, 3, 4)
         layout.addWidget(buttonGreenAnnotation, 3, 5)
         layout.addWidget(self.sc, 2, 0, 1, 0)
-        layout.addWidget(buttonPrevious, 4, 1)
-        layout.addWidget(buttonNext, 4, 2)
+        #layout.addWidget(buttonReviewAnnotation, 4, 0)
+        layout.addWidget(buttonRadioReview, 0, 4)
+        layout.addWidget(buttonRadioAnnotation, 0, 5)
+
+        layout.addWidget(buttonPrevious, 3, 1)
+        layout.addWidget(buttonNext, 3, 2)
         #layout.addWidget(buttonDetect, 4, 3, 1, 3)
         layout.addWidget(buttonRedDetect, 4, 3)
         layout.addWidget(buttonOrangeDetect, 4, 4)
@@ -172,6 +186,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
             fileAnnotation.close()
+
+    def buttonRadioAnnotation_clicked(self):
+
+        print("Button Mode Annotation clicked")
+
+    def buttonRadioReview_clicked(self):
+
+        print("Button Mode Review clicked")
+
 
     def buttonRedAnnotation_clicked(self):
 
@@ -390,7 +413,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     # List all files
-    fichiers = [f for f in listdir(INPUT) if isfile(join(INPUT, f))]
+    fichiers = []
+    #fichiers = [f for f in listdir(INPUT) if (isfile(join(INPUT, f)))]
+
+    # r=root, d=directories, f = files
+    for r, d, f in os.walk(INPUT):
+        for file in f:
+            if file.endswith("." + EXT):
+                print(os.path.join(r, file))
+                fichiers.append(file)
+
     app = QtWidgets.QApplication(sys.argv)
     w = MainWindow()
     app.exec()
