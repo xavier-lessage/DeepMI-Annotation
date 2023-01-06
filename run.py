@@ -16,11 +16,12 @@ from matplotlib.pyplot import imread
 from matplotlib import patches
 from PyQt6.QtCore import Qt
 
-
-INPUT = '/Users/xle/Dataset/angiographies/Disease'
-#INPUT = '/Users/xle/Dataset/angiographies/out'
+INPUT = ''
+INPUT_A = '/Users/xle/Dataset/angiographies/Disease'
+INPUT_R = '/Users/xle/Dataset/angiographies/out'
 OUTPUT = '/Users/xle/Dataset/angiographies//out/'
 INDEX_FILE = '/Users/xle/Dataset/angiographies/log/index.log'
+REVIEW_FILE = '/Users/xle/Dataset/angiographies/log/review.log'
 
 
 #INPUT = '/Users/xle/Desktop/these/mammo/in/negatifs'
@@ -43,6 +44,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
+
+        self.fichiers = None
+        self.index_file = None
+
 
         buttonNext = QPushButton()
         buttonNext.setText("Next")
@@ -190,11 +195,34 @@ class MainWindow(QtWidgets.QMainWindow):
     def buttonRadioAnnotation_clicked(self):
 
         print("Button Mode Annotation clicked")
+        self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+
+        self.buttonPrevious_clicked()
+        self.buttonNext_clicked()
+
+
+
 
     def buttonRadioReview_clicked(self):
 
         print("Button Mode Review clicked")
+        self.setWindowTitle('DeepM-Review ' + '' + self.imageName)
 
+        self.fichiers = []
+
+        # r=root, d=directories, f = files
+        for r, d, f in os.walk(INPUT_R):
+            for file in f:
+                if file.endswith("." + EXT):
+                    print(os.path.join(r, file))
+                    self.fichiers.append(file)
+
+        ReviewIndex = open(REVIEW_FILE, "w")
+        ReviewIndex.write(str(1))
+        ReviewIndex.close()
+
+        self.buttonPrevious_clicked()
+        self.buttonNext_clicked()
 
     def buttonRedAnnotation_clicked(self):
 
@@ -306,36 +334,68 @@ class MainWindow(QtWidgets.QMainWindow):
         shutil.copyfile(join(INPUT, self.imageName), join(OUTPUT, self.imageName))
 
     def buttonNext_clicked(self):
-            print("Button Next clicked")
-            fileIndex = open(INDEX_FILE, "r")
-            index = int(fileIndex.read())
-            index = index + 1
-            print(fichiers[index])
-            fileIndex = open(INDEX_FILE, "w")
-            fileIndex.write(str(index))
-            fileIndex.close()
-            self.imageName = fichiers[index]
-            image = imread(INPUT + '/' + self.imageName)
-            self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
-            self.sc.figure.gca().clear()
-            self.sc.figure.gca().imshow(image, cmap="gray")
-            self.reloadAnnotation()
-            self.sc.figure.gca().axis('off')
-            self.sc.draw()
 
+        self.index_file = INDEX_FILE
 
-    def buttonPrevious_clicked(self):
-        print("Button Previous clicked")
-        fileIndex = open(INDEX_FILE, "r")
+        if self.windowTitle()[6] == 'R':
+            print('mode review')
+            self.index_file = REVIEW_FILE
+
+        #INDEX_F = INDEX_FILE
+
+        #print("Button Next clicked")
+        fileIndex = open(self.index_file, "r")
         index = int(fileIndex.read())
-        index = index - 1
-        print(fichiers[index])
-        fileIndex = open(INDEX_FILE, "w")
+        index = index + 1
+        #print(fichiers[index])
+        fileIndex = open(self.index_file, "w")
         fileIndex.write(str(index))
         fileIndex.close()
         self.imageName = fichiers[index]
+        if self.windowTitle()[6] == 'R':
+            self.imageName = self.fichiers[index]
         image = imread(INPUT + '/' + self.imageName)
-        self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+        #if self.windowTitle()[6] == 'A':
+        #    self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+        if self.windowTitle()[6] == 'R':
+            self.setWindowTitle('DeepM-Review ' + '' + self.imageName)
+        else:
+            self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+        self.sc.figure.gca().clear()
+        self.sc.figure.gca().imshow(image, cmap="gray")
+        self.reloadAnnotation()
+        self.sc.figure.gca().axis('off')
+        self.sc.draw()
+
+
+    def buttonPrevious_clicked(self):
+
+        self.index_file = INDEX_FILE
+
+        if self.windowTitle()[6] == 'R':
+            print('mode review')
+            self.index_file = REVIEW_FILE
+
+        #INDEX_F = INDEX_FILE
+
+        print("Button Previous clicked")
+        fileIndex = open(self.index_file, "r")
+        index = int(fileIndex.read())
+        index = index - 1
+        print(fichiers[index])
+        fileIndex = open(self.index_file, "w")
+        fileIndex.write(str(index))
+        fileIndex.close()
+        self.imageName = fichiers[index]
+        if self.windowTitle()[6] == 'R':
+            self.imageName = self.fichiers[index]
+        image = imread(INPUT + '/' + self.imageName)
+        #if self.windowTitle()[6] == 'A':
+        #    self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+        if self.windowTitle()[6] == 'R':
+            self.setWindowTitle('DeepM-Review ' + '' + self.imageName)
+        else:
+            self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
         self.sc.figure.gca().clear()
         self.sc.figure.gca().imshow(image,cmap="gray")
         self.reloadAnnotation()
@@ -378,6 +438,7 @@ class MainWindow(QtWidgets.QMainWindow):
             fileIndex.write(str(1))
             index = 1
 
+
         fileIndex.close()
         self.imageName = fichiers[index]
         print(fichiers[index])
@@ -412,6 +473,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
+
+    # Mode Annotation by default
+    INPUT = INPUT_A
     # List all files
     fichiers = []
     #fichiers = [f for f in listdir(INPUT) if (isfile(join(INPUT, f)))]
