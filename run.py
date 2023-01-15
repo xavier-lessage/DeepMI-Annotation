@@ -361,6 +361,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.setWindowTitle('DeepM-Review ' + '' + self.imageName)
         else:
             self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+
         self.sc.figure.gca().clear()
         self.sc.figure.gca().imshow(image, cmap="gray")
         self.reloadAnnotation()
@@ -397,7 +398,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
         self.sc.figure.gca().clear()
-        self.sc.figure.gca().imshow(image,cmap="gray")
+        self.sc.figure.gca().imshow(image, cmap="gray")
         self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
@@ -406,23 +407,47 @@ class MainWindow(QtWidgets.QMainWindow):
     def buttonClear_clicked(self):
         print("Button Clear clicked")
         fileIndex = open(INDEX_FILE, "r")
+        ###
+        #if self.windowTitle()[6] == 'R':
+        #    print('mode review')
+        #    #self.index_file = REVIEW_FILE
+        #    self.fileIndex = REVIEW_FILE
+        #image = imread(INPUT + '/' + self.imageName)
+        ###
         index = int(fileIndex.read())
         fileIndex.close()
-        fileTxtToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'txt')
+
+        if self.windowTitle()[6] == 'R':
+            fileTxtToDel = OUTPUT + "/" + self.imageName.replace(EXT, 'txt')
+        else:
+            fileTxtToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'txt')
         if os.path.exists(fileTxtToDel):
             os.remove(fileTxtToDel)
-        fileLogToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'log')
+
+        if self.windowTitle()[6] == 'R':
+            fileLogToDel = OUTPUT + "/" + self.imageName.replace(EXT, 'log')
+        else:
+            fileLogToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'log')
         if os.path.exists(fileLogToDel):
             os.remove(fileLogToDel)
-        filePngToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'png')
+
+        if self.windowTitle()[6] == 'R':
+            filePngToDel = OUTPUT + "/" + self.imageName.replace(EXT, 'png')
+        else:
+            filePngToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'png')
         if os.path.exists(filePngToDel):
             os.remove(filePngToDel)
-        fileJpgToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'jpg')
+
+        if self.windowTitle()[6] == 'R':
+            fileJpgToDel = OUTPUT + "/" + self.imageName.replace(EXT, 'jpg')
+        else:
+            fileJpgToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'jpg')
         if os.path.exists(fileJpgToDel):
             os.remove(filePngToDel)
+
         self.sc.figure.gca().clear()
         image = imread(INPUT + '/' + self.imageName)
-        self.sc.figure.gca().imshow(image,cmap="gray")
+        self.sc.figure.gca().imshow(image, cmap="gray")
         self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
