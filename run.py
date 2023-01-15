@@ -259,28 +259,50 @@ class MainWindow(QtWidgets.QMainWindow):
         y2 = str(int(self.sc.figure.axes[0].viewLim._points[1, 1]))
         #print(y2)
 
-
+        print('NAME', self.imageName)
 
 
         # Update annotation file
 
-        if os.path.exists(OUTPUT + "/" + fichiers[index].replace(EXT, 'log')):
-            fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'log'), "a")
+        if self.windowTitle()[6] == 'R':
+            if os.path.exists(OUTPUT + "/" + self.imageName.replace(EXT, 'log')):
+                fileAnnotation = open(OUTPUT + "/" + self.imageName.replace(EXT, 'log'), "a")
+                #self.buttonRadioReview_clicked()
+                #self.buttonNext_clicked()
+                #self.buttonPrevious_clicked()
+            else:
+                fileAnnotation = open(OUTPUT + "/" + self.imageName.replace(EXT, 'log'), "w")
+                fileAnnotation.write(str(self.imageName + '\n'))
+                fileAnnotation.write('classColor,x1,x2,y1,y2' + '\n')
+                #self.buttonRadioReview_clicked()
+                #self.buttonNext_clicked()
+                #self.buttonPrevious_clicked()
+
         else:
-            fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'log'), "w")
-            fileAnnotation.write(str(self.imageName + '\n'))
-            fileAnnotation.write('classColor,x1,x2,y1,y2' + '\n')
+            if os.path.exists(OUTPUT + "/" + fichiers[index].replace(EXT, 'log')):
+                fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'log'), "a")
+            else:
+                fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'log'), "w")
+                fileAnnotation.write(str(self.imageName + '\n'))
+                fileAnnotation.write('classColor,x1,x2,y1,y2' + '\n')
 
         fileAnnotation.write(classColor + ',' + x1 + ',' + x2 + ',' + y1 + ',' + y2 + '\n')
         fileAnnotation.close()
 
         # Update annotation file (yolo format)
         # class x_center y_center width height
-        if os.path.exists(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt')):
-            fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "a")
+
+        if self.windowTitle()[6] == 'R':
+            if os.path.exists(OUTPUT + "/" + self.imageName.replace(EXT, 'txt')):
+                fileAnnotation = open(OUTPUT + "/" + self.imageName.replace(EXT, 'txt'), "a")
+            else:
+                fileAnnotation = open(OUTPUT + "/" + self.imageName.replace(EXT, 'txt'), "w")
         else:
-            fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "w")
-            #fileAnnotation.write(str(self.imageName + '\n'))
+            if os.path.exists(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt')):
+                fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "a")
+            else:
+                fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'txt'), "w")
+                #fileAnnotation.write(str(self.imageName + '\n'))
 
         x_center = str((int(x1) + int(x2) ) / 2)
         y_center = str((int(y1) + int(y2)) / 2)
@@ -324,9 +346,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.sc.figure.gca().clear()
         image = imread(INPUT + '/' + self.imageName)
-        self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
+        if self.windowTitle()[6] == 'R':
+            print("")
+        else:
+            self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
         self.sc.figure.gca().imshow(image, cmap="gray")
-        self.reloadAnnotation()
+        if self.windowTitle()[6] == 'R':
+            self.buttonRadioReview_clicked()
+            self.buttonNext_clicked()
+            self.buttonPrevious_clicked()
+        else:
+            self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
 
@@ -364,6 +394,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.sc.figure.gca().clear()
         self.sc.figure.gca().imshow(image, cmap="gray")
+        #if self.windowTitle()[6] == 'R':
+            #self.buttonRadioReview_clicked()
+                # self.buttonNext_clicked()
+                # self.buttonPrevious_clicked()
+        #else:
         self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
