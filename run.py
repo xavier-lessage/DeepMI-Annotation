@@ -209,17 +209,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('DeepM-Review ' + '' + self.imageName)
 
         self.fichiers = []
-
+        self.nbr_review = 0
         # r=root, d=directories, f = files
         for r, d, f in os.walk(INPUT_R):
             for file in f:
                 if file.endswith("." + EXT):
                     print(os.path.join(r, file))
                     self.fichiers.append(file)
+                    self.nbr_review = self.nbr_review + 1
 
         ReviewIndex = open(REVIEW_FILE, "w")
         ReviewIndex.write(str(1))
         ReviewIndex.close()
+        print('self.nbr_review',self.nbr_review)
 
         self.buttonPrevious_clicked()
         self.buttonNext_clicked()
@@ -347,7 +349,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc.figure.gca().clear()
         image = imread(INPUT + '/' + self.imageName)
         if self.windowTitle()[6] == 'R':
-            print("")
+            #fileReview = open(REVIEW_FILE, "w") ####
+            #fileReview.write(str(INDEX))
+
+            print(self.index_file)
         else:
             self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
         self.sc.figure.gca().imshow(image, cmap="gray")
@@ -376,6 +381,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #print("Button Next clicked")
         fileIndex = open(self.index_file, "r")
         index = int(fileIndex.read())
+
         index = index + 1
         #print(fichiers[index])
         fileIndex = open(self.index_file, "w")
@@ -383,7 +389,10 @@ class MainWindow(QtWidgets.QMainWindow):
         fileIndex.close()
         self.imageName = fichiers[index]
         if self.windowTitle()[6] == 'R':
-            self.imageName = self.fichiers[index]
+            try:
+                self.imageName = self.fichiers[index]
+            except:
+                self.buttonRadioReview_clicked()
         image = imread(INPUT + '/' + self.imageName)
         #if self.windowTitle()[6] == 'A':
         #    self.setWindowTitle('DeepM-Annotation ' + '' + self.imageName)
