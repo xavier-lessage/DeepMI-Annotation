@@ -17,12 +17,11 @@ from matplotlib import patches
 from PyQt6.QtCore import Qt
 
 INPUT = ''
-INPUT_A = '/Users/xle/Dataset/angiographies/Disease'
-INPUT_R = '/Users/xle/Dataset/angiographies/out'
-OUTPUT = '/Users/xle/Dataset/angiographies//out/'
-INDEX_FILE = '/Users/xle/Dataset/angiographies/log/index.log'
-REVIEW_FILE = '/Users/xle/Dataset/angiographies/log/review.log'
-
+INPUT_A = '/Users/nedo/Documents/angioai/annotation/disease'
+INPUT_R = '/Users/nedo/Documents/angioai/annotation/disease'
+OUTPUT = '/Users/nedo/Documents/angioai/annotation/out'
+INDEX_FILE = '/Users/nedo/Documents/angioai/annotation/log/index.log'
+REVIEW_FILE = '/Users/nedo/Documents/angioai/annotation/log/review.log'
 
 #INPUT = '/Users/xle/Desktop/these/mammo/in/negatifs'
 #OUTPUT = '/Users/xle/Desktop/these/mammo/out/'
@@ -47,32 +46,40 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.fichiers = None
         self.index_file = None
+        self.index = None
+        self.currentAnnotationRectangle = None
+        self.start_x = None
+        self.start_y = None
+        self.end_x = None
+        self.end_y = None
+        self.currentDefiningAnnotationColor = None
+        self.currentDefiningAnnotationCode = None
 
 
         buttonNext = QPushButton()
-        buttonNext.setText("Next")
+        buttonNext.setText("Next [2]")
         buttonNext.clicked.connect(self.buttonNext_clicked)
         #button1.move(64, 32)
         #widget.setGeometry(50, 50, 320, 200)
 
         buttonPrevious = QPushButton()
-        buttonPrevious.setText("Previous")
+        buttonPrevious.setText("Previous [1]")
         buttonPrevious.clicked.connect(self.buttonPrevious_clicked)
 
         buttonRedAnnotation = QPushButton()
-        buttonRedAnnotation.setText("Red Annotation")
+        buttonRedAnnotation.setText("Red Annotation [Q]")
         buttonRedAnnotation.clicked.connect(self.buttonRedAnnotation_clicked)
 
         buttonOrangeAnnotation = QPushButton()
-        buttonOrangeAnnotation.setText("Orange Annotation")
+        buttonOrangeAnnotation.setText("Orange Annotation [W]")
         buttonOrangeAnnotation.clicked.connect(self.buttonOrangeAnnotation_clicked)
 
         buttonGreenAnnotation = QPushButton()
-        buttonGreenAnnotation.setText("Green Annotation")
+        buttonGreenAnnotation.setText("Green Annotation [E]")
         buttonGreenAnnotation.clicked.connect(self.buttonGreenAnnotation_clicked)
 
         buttonClear = QPushButton()
-        buttonClear.setText("Clear Annotation(s)")
+        buttonClear.setText("Clear Annotation(s) [C]")
         buttonClear.clicked.connect(self.buttonClear_clicked)
 
         buttonRedDetect= QPushButton()
@@ -89,6 +96,12 @@ class MainWindow(QtWidgets.QMainWindow):
         buttonRadioReview.setChecked(False)
         buttonRadioReview.clicked.connect(self.buttonRadioReview_clicked)
 
+
+        #define a text label
+        self.progressLabel = QtWidgets.QLabel(self)
+        self.progressLabel.setText("Progress: 0/0")
+        
+      
 
 
         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
@@ -122,6 +135,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         layout.addWidget(buttonPrevious, 3, 1)
         layout.addWidget(buttonNext, 3, 2)
+        layout.addWidget(self.progressLabel, 4, 0)
+
         #layout.addWidget(buttonDetect, 4, 3, 1, 3)
         layout.addWidget(buttonRedDetect, 4, 3)
         layout.addWidget(buttonOrangeDetect, 4, 4)
@@ -192,6 +207,113 @@ class MainWindow(QtWidgets.QMainWindow):
 
             fileAnnotation.close()
 
+    def markStartXandY(self, event):
+        # print("Mark Start X and Y")
+        self.start_x = event.xdata
+        self.start_y = event.ydata
+        #disconnect the mouse event to avoid multiple calls
+        self.sc.figure.canvas.mpl_disconnect(self.sc.figure.canvas.mpl_connect('motion_notify_event', self.markStartXandY))
+
+
+    def startDefiningAnnotationArea(self,color,code):
+        # print("Start Defining Annotation Area")
+        
+        self.currentDefiningAnnotationColor = color
+        self.currentDefiningAnnotationCode = code
+        #connect a mouse event to the canvas to get the start coordinates of the annotation area
+        self.sc.figure.canvas.mpl_connect('motion_notify_event', self.markStartXandY)
+
+        
+        
+        # print("Start x and y are " + str(self.start_x) + " " + str(self.start_y))
+
+        
+        #when the cursor moves on the canvas create a rectangle to mark the annotation area and update the rectangle coordinates
+        self.sc.figure.canvas.mpl_connect('motion_notify_event', self.updateAnnotationArea)
+
+        
+        #when mouse is clicked on the canvas, call the function to mark the end of the annotation area
+        #when mous is up on the canvas, call the function to mark the end of the annotation area
+        self.sc.figure.canvas.mpl_connect('button_release_event', self.endDefiningAnnotationArea)
+        # self.sc.figure.canvas.mpl_connect('button_press_event', self.endDefiningAnnotationArea)
+
+
+    def updateAnnotationArea(self, event):
+        # print("Update Annotation Area")
+        # print("End x and y are " + str(event.xdata) + " " + str(event.ydata))
+        #if currentAnnotationRectangle is not None, remove it from the canvas
+        if self.currentAnnotationRectangle is not None:
+            self.currentAnnotationRectangle.remove()
+
+        #create a new rectangle to mark the annotation area that begins in the start_x and start_y and ends in the current cursor position
+        self.currentAnnotationRectangle = patches.Rectangle((self.start_x, self.start_y), event.xdata - self.start_x, event.ydata - self.start_y, fill=False, edgecolor=self.currentDefiningAnnotationColor, linewidth=1)
+        self.end_x = event.xdata
+        self.end_y = event.ydata
+
+        #add the new rectangle to the canvas
+        self.sc.figure.gca().add_patch(self.currentAnnotationRectangle)
+        #update the canvas
+        self.sc.draw()
+
+
+
+                
+
+      
+
+    def endDefiningAnnotationArea(self,event):
+        # print("End Defining Annotation Area")
+        #mark annotation end coordinates at current cursor position
+        # self.end_x = event.xdata
+        # self.end_y = event.ydata
+        #disconnect the mouse click event
+        self.sc.figure.canvas.mpl_disconnect(self.sc.figure.canvas.mpl_connect('button_press_event', self.endDefiningAnnotationArea))
+        #call the function to draw the annotation area
+
+        #convert coordinates from base 10 to integer and then to string
+
+        start_x = str(int(float(self.start_x)))
+        start_y = str(int(float(self.start_y)))
+        end_x = str(int(float(self.end_x)))
+        end_y = str(int(float(self.end_y)))
+        #if the annotation area is not empty, update the annotation file
+        if self.start_x != self.end_x and self.start_y != self.end_y:
+            self.updateAnnotationFile(start_x, end_x, start_y, end_y,self.currentDefiningAnnotationColor,self.currentDefiningAnnotationCode)
+        # #prevent the  updateAnnotationArea function to be called when the cursor moves
+        #     self.sc.figure.canvas.mpl_disconnect(self.sc.figure.canvas.mpl_connect('motion_notify_event', self.updateAnnotationArea))
+        #     #disconnect the button release event to avoid multiple calls
+        #     self.sc.figure.canvas.mpl_disconnect(self.sc.figure.canvas.mpl_connect('button_release_event', self.endDefiningAnnotationArea))
+        #     if self.currentAnnotationRectangle is not None:
+        #         self.currentAnnotationRectangle.remove()
+        #         self.currentAnnotationRectangle = None
+        #     self.currentDefiningAnnotationColor = None
+        #     self.currentDefiningAnnotationCode = None
+        # self.drawAnnotationArea()
+        self.cancelDefiningAnnotationArea()
+
+
+    # def drawAnnotationArea(self):
+        #  self.AnnotationGeneration('red', '1')
+
+
+    def cancelDefiningAnnotationArea(self):
+        # print("Cancel Defining Annotation Area")
+        #disconnect the mouse click event
+        self.sc.figure.canvas.mpl_disconnect(self.sc.figure.canvas.mpl_connect('button_press_event', self.endDefiningAnnotationArea))
+        #prevent the  updateAnnotationArea function to be called when the cursor moves
+        self.sc.figure.canvas.mpl_disconnect(self.sc.figure.canvas.mpl_connect('motion_notify_event', self.updateAnnotationArea))
+        #disconnect the button release event to avoid multiple calls
+        self.sc.figure.canvas.mpl_disconnect(self.sc.figure.canvas.mpl_connect('button_release_event', self.endDefiningAnnotationArea))
+        if self.currentAnnotationRectangle is not None:
+            self.currentAnnotationRectangle.remove()
+            
+            self.currentAnnotationRectangle = None
+            self.sc.draw()
+        self.currentDefiningAnnotationColor = None
+        self.currentDefiningAnnotationCode = None
+
+        
+
     def buttonRadioAnnotation_clicked(self):
 
         print("Button Mode Annotation clicked")
@@ -247,9 +369,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def AnnotationGeneration(self, classColor, classCode):
 
-        fileIndex = open(INDEX_FILE, "r")
-        index = int(fileIndex.read())
-        fileIndex.close()
+        
 
         # Retrieval of coordinates
         x1 = str(int(self.sc.figure.axes[0].viewLim._points[0, 0]))
@@ -262,8 +382,15 @@ class MainWindow(QtWidgets.QMainWindow):
         #print(y2)
 
         print('NAME', self.imageName)
+        self.updateAnnotationFile(x1, x2, y1, y2, classColor, classCode)
+
+    def updateAnnotationFile(self,x1,x2,y1,y2, classColor, classCode):
 
 
+ 
+        fileIndex = open(INDEX_FILE, "r")
+        index = int(fileIndex.read())
+        fileIndex.close()
         # Update annotation file
 
         if self.windowTitle()[6] == 'R':
@@ -383,6 +510,10 @@ class MainWindow(QtWidgets.QMainWindow):
         index = int(fileIndex.read())
 
         index = index + 1
+
+        self.index = index
+        self.updateProgressLabel(index)
+        
         #print(fichiers[index])
         fileIndex = open(self.index_file, "w")
         fileIndex.write(str(index))
@@ -428,6 +559,12 @@ class MainWindow(QtWidgets.QMainWindow):
         index = int(fileIndex.read())
         index = index - 1
         print(fichiers[index])
+       
+        self.index = index
+        self.updateProgressLabel(index)
+
+       
+
         fileIndex = open(self.index_file, "w")
         fileIndex.write(str(index))
         fileIndex.close()
@@ -496,7 +633,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc.figure.gca().axis('off')
         self.sc.draw()
 
+
+    def updateProgressLabel(self,index):
+        self.progressLabel.setText(str(index) + "/" + str(len(fichiers)))
+
+
     def loadingFiles(self):
+
+
 
         # Load last image or fist for the first run
         if os.path.exists(INDEX_FILE):
@@ -507,6 +651,8 @@ class MainWindow(QtWidgets.QMainWindow):
             fileIndex.write(str(1))
             index = 1
 
+        self.index = index
+        self.updateProgressLabel(index)
 
         fileIndex.close()
         self.imageName = fichiers[index]
@@ -515,7 +661,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reloadAnnotation()
         self.sc.figure.tight_layout(h_pad=None)
 
+    
 
+
+        
+    
 
     def keyPressEvent(self, e):
 
@@ -523,6 +673,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.close()
         if e.key() == Qt.Key.Key_Left.value:
             self.buttonPrevious_clicked()
+        #if key 1 pressed call previous image
+        if e.key() == Qt.Key.Key_1.value:
+            self.buttonPrevious_clicked()
+        #if key 2 pressed call next image
+        if e.key() == Qt.Key.Key_2.value:
+            self.buttonNext_clicked()
+
         if e.key() == Qt.Key.Key_Right.value:
             self.buttonNext_clicked()
         if e.key() == Qt.Key.Key_Space.value:
@@ -535,10 +692,39 @@ class MainWindow(QtWidgets.QMainWindow):
             self.buttonGreenAnnotation_clicked()
         if e.key() == Qt.Key.Key_A.value:
             self.buttonRedAnnotation_clicked()
+        # if e.key() == Qt.Key.Key_Q.value:
+            # self.buttonOrangeAnnotation_clicked()
+        # if Z key pressed call start defining annotation area
         if e.key() == Qt.Key.Key_Q.value:
-            self.buttonOrangeAnnotation_clicked()
+            if self.currentDefiningAnnotationColor == None:
+                self.startDefiningAnnotationArea('red',1)
+            else:
+                self.endDefiningAnnotationArea(e)
+        # if C key pressed then call button clear 
+        if e.key() == Qt.Key.Key_C.value:
+            self.buttonClear_clicked()
+        
+
+        # same thing for w key but orange and 2
         if e.key() == Qt.Key.Key_W.value:
-            self.buttonGreenAnnotation_clicked()
+            if self.currentDefiningAnnotationColor == None:
+                self.startDefiningAnnotationArea('orange',2)
+            else:
+                self.endDefiningAnnotationArea(e)
+        # same thing for e key but green and 3
+        if e.key() == Qt.Key.Key_E.value:
+            if self.currentDefiningAnnotationColor == None:
+                self.startDefiningAnnotationArea('green',3)
+            else:
+                self.endDefiningAnnotationArea(e)
+
+        #if z button is pressed cancel defining annotation area
+        if e.key() == Qt.Key.Key_Z.value:
+            if self.currentDefiningAnnotationColor != None:
+                self.cancelDefiningAnnotationArea()
+            
+        # if e.key() == Qt.Key.Key_W.value:
+        #     self.buttonGreenAnnotation_clicked()
 
 
 if __name__ == "__main__":
