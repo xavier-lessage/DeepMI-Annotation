@@ -104,7 +104,7 @@ class MainWindow(QtWidgets.QMainWindow):
       
 
 
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc = MplCanvas(self, width=5, height=4, dpi=200)
         self.sc.figure.gca().axis('off')
 
         self.line_color = 'orange'
@@ -138,9 +138,9 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.progressLabel, 4, 0)
 
         #layout.addWidget(buttonDetect, 4, 3, 1, 3)
-        layout.addWidget(buttonRedDetect, 4, 3)
-        layout.addWidget(buttonOrangeDetect, 4, 4)
-        layout.addWidget(buttonGreenDetect, 4, 5)
+        # layout.addWidget(buttonRedDetect, 4, 3)
+        # layout.addWidget(buttonOrangeDetect, 4, 4)
+        # layout.addWidget(buttonGreenDetect, 4, 5)
 
 
 
@@ -497,6 +497,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def buttonNext_clicked(self):
 
+
+        #cancel defining annotation area
+        self.cancelDefiningAnnotationArea()
+
         self.index_file = INDEX_FILE
 
         if self.windowTitle()[6] == 'R':
@@ -545,6 +549,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def buttonPrevious_clicked(self):
+
+        #cancel defining annotation area
+        self.cancelDefiningAnnotationArea()
 
         self.index_file = INDEX_FILE
 
