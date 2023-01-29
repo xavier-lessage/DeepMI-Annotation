@@ -28,6 +28,19 @@ REVIEW_FILE = '/Users/nedo/Documents/angioai/annotation/log/review.log'
 #INDEX_FILE = '/Users/xle/Desktop/these/mammo/log/index.log'
 INDEX = 1
 EXT = 'png'
+LOCATIONS = {
+    1: "RCA",
+    2: "LM",
+    3: "LAD",
+    4: "Cx"
+}
+
+COLORS = {
+    1: "red",
+    2: "orange",
+    3: "green",
+    4: "blue"
+}
 
 class MplCanvas(FigureCanvasQTAgg):
 
@@ -47,13 +60,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fichiers = None
         self.index_file = None
         self.index = None
-        self.currentAnnotationRectangle = None
+        
         self.start_x = None
         self.start_y = None
         self.end_x = None
         self.end_y = None
         self.currentDefiningAnnotationColor = None
         self.currentDefiningAnnotationCode = None
+        self.currentAnnotationIndex = None
+        self.currentAnnotationRectangle = None
+        self.currentHighlightRectangle = None
+        self.currentAnnotationColor = None
+        self.currentAnnotationLocation = None
+
+        self.allAnnotations = []
+        
+        
 
 
         buttonNext = QPushButton()
@@ -78,6 +100,24 @@ class MainWindow(QtWidgets.QMainWindow):
         buttonGreenAnnotation.setText("Green Annotation [E]")
         buttonGreenAnnotation.clicked.connect(self.buttonGreenAnnotation_clicked)
 
+
+        #define four buttons to define annotation location classes (RCA, LM, LAD, Cx)
+        buttonRCA = QPushButton()
+        buttonRCA.setText("RCA [A]")
+        buttonRCA.clicked.connect(self.buttonRCA_clicked)
+        buttonLM = QPushButton()
+        buttonLM.setText("LM [S]")
+        buttonLM.clicked.connect(self.buttonLM_clicked)
+        buttonLAD = QPushButton()
+        buttonLAD.setText("LAD [D]")
+        buttonLAD.clicked.connect(self.buttonLAD_clicked)
+        buttonCx = QPushButton()
+        buttonCx.setText("Cx [F]")
+        buttonCx.clicked.connect(self.buttonCx_clicked)
+
+
+
+
         buttonClear = QPushButton()
         buttonClear.setText("Clear Annotation(s) [C]")
         buttonClear.clicked.connect(self.buttonClear_clicked)
@@ -100,6 +140,34 @@ class MainWindow(QtWidgets.QMainWindow):
         #define a text label
         self.progressLabel = QtWidgets.QLabel(self)
         self.progressLabel.setText("Progress: 0/0")
+
+        #define a text label with current annotation
+        self.currentAnnotationLabel = QtWidgets.QLabel(self)
+        self.currentAnnotationLabel.setText("Current Annotation: None")
+
+
+        #define a text label for color of current annotation
+        self.currentAnnotationColorLabel = QtWidgets.QLabel(self)
+        self.currentAnnotationColorLabel.setText("Current Annotation Color: None")
+
+        #define a text label for location of current annotation
+        self.currentAnnotationLocationLabel = QtWidgets.QLabel(self)
+        self.currentAnnotationLocationLabel.setText("Current Annotation Location: None")
+        
+
+
+        #add next annotation button
+        buttonNextAnnotation = QPushButton()
+        buttonNextAnnotation.setText("Next Annt. [4]")
+        buttonNextAnnotation.clicked.connect(self.moveToNextAnnotation)
+
+        #add previous annotation button
+        buttonPreviousAnnotation = QPushButton()
+        buttonPreviousAnnotation.setText("Previous Annt. [3]")
+        buttonPreviousAnnotation.clicked.connect(self.moveToPreviousAnnotation)
+
+        
+
         
       
 
@@ -123,19 +191,35 @@ class MainWindow(QtWidgets.QMainWindow):
         layout = QtWidgets.QGridLayout()
 
         layout.addWidget(toolbar, 0, 0, 1, 0)
-        layout.addWidget(buttonClear, 3, 0)
+        layout.addWidget(buttonClear, 3, 5)
 
-        layout.addWidget(buttonRedAnnotation, 3, 3)
-        layout.addWidget(buttonOrangeAnnotation, 3, 4)
-        layout.addWidget(buttonGreenAnnotation, 3, 5)
+        layout.addWidget(buttonRedAnnotation, 3, 2)
+        layout.addWidget(buttonOrangeAnnotation, 3, 3)
+        layout.addWidget(buttonGreenAnnotation, 3, 4)
         layout.addWidget(self.sc, 2, 0, 1, 0)
         #layout.addWidget(buttonReviewAnnotation, 4, 0)
         layout.addWidget(buttonRadioReview, 0, 4)
         layout.addWidget(buttonRadioAnnotation, 0, 5)
 
-        layout.addWidget(buttonPrevious, 3, 1)
-        layout.addWidget(buttonNext, 3, 2)
-        layout.addWidget(self.progressLabel, 4, 0)
+        layout.addWidget(buttonPrevious, 3, 0)
+        layout.addWidget(buttonNext, 3, 1)
+        #add next annotation button on 4th row 1st column
+        layout.addWidget(buttonPreviousAnnotation, 4, 0)
+        layout.addWidget(buttonNextAnnotation, 4, 1)
+
+
+
+        layout.addWidget(self.progressLabel, 5, 0)
+        layout.addWidget(self.currentAnnotationLabel, 5, 1)
+        layout.addWidget(self.currentAnnotationColorLabel, 5, 2)
+        layout.addWidget(self.currentAnnotationLocationLabel, 5, 3)
+
+        #add the location buttons to layout in row 5 columns 3-6
+        layout.addWidget(buttonRCA, 4, 2)
+        layout.addWidget(buttonLM, 4, 3)
+        layout.addWidget(buttonLAD, 4, 4)
+        layout.addWidget(buttonCx, 4, 5)
+
 
         #layout.addWidget(buttonDetect, 4, 3, 1, 3)
         # layout.addWidget(buttonRedDetect, 4, 3)
@@ -161,12 +245,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def reloadAnnotation(self):
         print("Reload Annotation")
+        self.allAnnotations = []
         if os.path.exists(OUTPUT + '/' + str(self.imageName).replace(EXT, 'log')):
 
             fileAnnotation= open(OUTPUT + '/' + str(self.imageName).replace(EXT, 'log'), "r")
             #print(str(self.imageName))
             fileAnnotation.readline()
             fileAnnotation.readline()
+
+            #clear all annotations
+            self.allAnnotations = []
 
             while True:
                 line = fileAnnotation.readline()
@@ -181,6 +269,27 @@ class MainWindow(QtWidgets.QMainWindow):
                 x2 = match[2]
                 y1= match[3]
                 y2 = match[4]
+                #if match[5] exists then set location variable to match[5] else set location variable to None
+                if len(match) > 5:
+                    location = match[5]
+                    if location == 'None':
+                        location = None
+                else:
+                    location = None
+                #add annotation to list
+               
+
+                #get key of COLORS dictionary that matches the value classe variable
+                index =  list(COLORS.keys())[list(COLORS.values()).index(classe)]
+
+                
+                self.currentAnnotationColor = index
+                if location is not None:
+                    self.currentAnnotationLocation = list(LOCATIONS.keys())[list(LOCATIONS.values()).index(location)]
+                else:
+                    self.currentAnnotationLocation = None
+
+                self.allAnnotations.append([index, x1, x2, y1, y2, self.currentAnnotationLocation])
 
                 if classe == 'red':
                     self.line_color = 'red'
@@ -205,7 +314,77 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.sc.draw()
 
 
+
+            if len(self.allAnnotations) > 0:
+                self.currentAnnotationIndex = 0
+
+                self.highlightCurrentAnnotation()
             fileAnnotation.close()
+            self.updateCurrentAnnotationLabels()
+
+
+
+
+    def updateCurrentAnnotationLocation(self,code):
+        self.currentAnnotationLocation = code
+        #update allAnnotations
+        self.allAnnotations[self.currentAnnotationIndex][5] = code
+
+
+    #set current annotation label to current annotation number (index + 1) / total number of annotations
+
+
+
+    def updateCurrentAnnotationLabels(self):
+
+
+
+
+        if self.currentAnnotationIndex is not None:
+
+            #update current Annotation variables based on index
+            self.currentAnnotationColor = self.allAnnotations[self.currentAnnotationIndex][0]
+            self.currentAnnotationLocation = self.allAnnotations[self.currentAnnotationIndex][5]
+            
+
+            self.currentAnnotationLabel.setText("Area: "+str(self.currentAnnotationIndex + 1) + '/' + str(len(self.allAnnotations)))
+        else:
+            self.currentAnnotationLabel.setText("Area: None")
+        if self.currentAnnotationColor is not None:            
+            self.currentAnnotationColorLabel.setText("Color: "+str(COLORS[self.currentAnnotationColor]))    
+        else:
+            self.currentAnnotationColorLabel.setText("Color: None ")
+        if  self.currentAnnotationLocation is not None:
+            self.currentAnnotationLocationLabel.setText("Location: "+str(LOCATIONS[self.currentAnnotationLocation]))
+        else:
+            self.currentAnnotationLocationLabel.setText("Location: None ")
+    
+
+
+    def highlightCurrentAnnotation(self):
+        print("Highlighing current annotation")
+
+        if self.currentAnnotationIndex is not None:
+
+            if self.currentHighlightRectangle is not None:
+                self.currentHighlightRectangle.remove()
+            #draw a black rectangle around current annotation
+            self.currentHighlightRectangle = patches.Rectangle((int(self.allAnnotations[self.currentAnnotationIndex][1]), int(self.allAnnotations[self.currentAnnotationIndex][3])), int(self.allAnnotations[self.currentAnnotationIndex][2]) - int(self.allAnnotations[self.currentAnnotationIndex][1]), int(self.allAnnotations[self.currentAnnotationIndex][4]) - int(self.allAnnotations[self.currentAnnotationIndex][3]), linewidth=2, edgecolor='purple', facecolor='none')
+            self.sc.figure.gca().add_patch(self.currentHighlightRectangle)
+            self.sc.draw()
+            
+    def clearAllAnnotations(self):
+        print("Clear All Annotations")
+        self.allAnnotations = []
+        self.currentAnnotationIndex = None
+        self.currentAnnotationColor = None
+        self.currentAnnotationLocation = None
+        
+        if self.currentHighlightRectangle is not None:
+            self.currentHighlightRectangle.remove()
+            self.currentHighlightRectangle = None
+        self.sc.draw()
+        self.updateCurrentAnnotationLabels()
 
     def markStartXandY(self, event):
         # print("Mark Start X and Y")
@@ -219,7 +398,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # print("Start Defining Annotation Area")
         
         self.currentDefiningAnnotationColor = color
+        self.currentAnnotationColor = color
         self.currentDefiningAnnotationCode = code
+        self.currentAnnotationLocation = None
+        self.currentAnnotationColor = code
         #connect a mouse event to the canvas to get the start coordinates of the annotation area
         self.sc.figure.canvas.mpl_connect('motion_notify_event', self.markStartXandY)
 
@@ -278,7 +460,10 @@ class MainWindow(QtWidgets.QMainWindow):
         end_y = str(int(float(self.end_y)))
         #if the annotation area is not empty, update the annotation file
         if self.start_x != self.end_x and self.start_y != self.end_y:
-            self.updateAnnotationFile(start_x, end_x, start_y, end_y,self.currentDefiningAnnotationColor,self.currentDefiningAnnotationCode)
+            self.updateAnnotationFile(start_x, end_x, start_y, end_y,
+                                      self.currentAnnotationColor,
+                                      self.currentAnnotationLocation
+                                      )
         # #prevent the  updateAnnotationArea function to be called when the cursor moves
         #     self.sc.figure.canvas.mpl_disconnect(self.sc.figure.canvas.mpl_connect('motion_notify_event', self.updateAnnotationArea))
         #     #disconnect the button release event to avoid multiple calls
@@ -289,6 +474,13 @@ class MainWindow(QtWidgets.QMainWindow):
         #     self.currentDefiningAnnotationColor = None
         #     self.currentDefiningAnnotationCode = None
         # self.drawAnnotationArea()
+        #set highglighted annotation index to last annotation
+        self.currentAnnotationIndex = len(self.allAnnotations) - 1
+        #update highlighted annotation
+        self.updateCurrentAnnotationLabels()
+        self.highlightCurrentAnnotation()
+        
+
         self.cancelDefiningAnnotationArea()
 
 
@@ -351,24 +543,128 @@ class MainWindow(QtWidgets.QMainWindow):
     def buttonRedAnnotation_clicked(self):
 
         print("Button Red Annotation clicked")
-        self.AnnotationGeneration('red', '1')
+        self.currentAnnotationColor = 1
+        self.AnnotationGeneration()
+
         #self.reloadAnnotation()
 
     def buttonOrangeAnnotation_clicked(self):
 
         print("Button Orange Annotation clicked")
-        self.AnnotationGeneration('orange', '2')
+        self.currentAnnotationColor = 2
+        self.AnnotationGeneration()
         #self.reloadAnnotation()
 
     def buttonGreenAnnotation_clicked(self):
 
         print("Button Green Annotation clicked")
-        self.AnnotationGeneration('green', '3')
+        self.currentAnnotationColor = 3
+        self.AnnotationGeneration()
         #self.reloadAnnotation()
 
 
-    def AnnotationGeneration(self, classColor, classCode):
+    #make methods for location buttons clicked
+    def buttonRCA_clicked(self):
+        print("Button RCA clicked")
+        self.updateCurrentAnnotationLocation(1)
+        self.updateCurrentAnnotationLabels()
+        self.clearAndWriteAllAnnotationsToFile()
+        
+        self.moveToNextAnnotation()
+        # self.
+        #self.reloadAnnotation()
+    def buttonLM_clicked(self):
+        print("Button LM clicked")
+        self.updateCurrentAnnotationLocation(2)
+        self.updateCurrentAnnotationLabels()
+        self.clearAndWriteAllAnnotationsToFile()
+        self.moveToNextAnnotation()
+        # self.
+        #self.reloadAnnotation()
+    def buttonLAD_clicked(self):
+        print("Button LAD clicked")
+        
+        self.updateCurrentAnnotationLocation(3)
+        self.updateCurrentAnnotationLabels()
+        self.clearAndWriteAllAnnotationsToFile()
+        self.moveToNextAnnotation()
+        # self.
+        #self.reloadAnnotation()
+    def buttonCx_clicked(self):
+        print("Button CX clicked")
+        
+        self.updateCurrentAnnotationLocation(4)      
+        self.updateCurrentAnnotationLabels()
+        self.clearAndWriteAllAnnotationsToFile()
+        self.moveToNextAnnotation()
+        # self.
+        #self.reloadAnnotation()
 
+
+    #move to next annotation and if reach end of allAnnotations start with the first one
+    def moveToNextAnnotation(self):
+        if self.currentAnnotationIndex < len(self.allAnnotations) - 1:
+            self.currentAnnotationIndex += 1
+        else:
+            self.currentAnnotationIndex = 0
+
+        #highlight the current annotation
+        self.updateCurrentAnnotationLabels()
+        self.highlightCurrentAnnotation()
+
+
+    #move to previous annotation and if reach start of allAnnotations start with the last one
+    def moveToPreviousAnnotation(self):
+        if self.currentAnnotationIndex > 0:
+            self.currentAnnotationIndex -= 1
+        else:
+            self.currentAnnotationIndex = len(self.allAnnotations) - 1
+        self.updateCurrentAnnotationLabels()
+        self.highlightCurrentAnnotation()
+
+
+    
+
+    def clearAndWriteAllAnnotationsToFile(self):
+        #clear the annotation file
+        self.clearAnnotationFiles()
+        #for reach element in allAnnotations use the updateAnnotationFile method
+        for annotation in self.allAnnotations:
+            annotation[0]
+            self.updateAnnotationFile( annotation[1], annotation[2], annotation[3], annotation[4], annotation[0], annotation[5])
+
+
+
+
+    def updateLocation(self):
+        if self.currentAnnotationIndex is not None:
+            if self.currentAnnotationIndex < len(self.allAnnotations):
+                if self.currentAnnotationLocation is not None:
+                    self.allAnnotations[self.currentAnnotationIndex][5] = self.currentAnnotationLocation
+                    self.updateCurrentAnnotationLabels()
+                    self.highlightCurrentAnnotation()
+
+
+                    
+
+        # self.currentAnnotationLocation = location
+        # self.updateCurrentAnnotationLabels()
+        # self.highlightCurrentAnnotation()
+
+
+    def AnnotationGeneration(self):
+
+
+        #if current annotation color is empty break the function
+        if self.currentAnnotationColor is None:
+            return
+
+        #classColor is the value of COLORS dictionary by classCode key
+        classCode = self.currentAnnotationColor
+        classColor = COLORS[classCode]
+
+
+        
         
 
         # Retrieval of coordinates
@@ -382,10 +678,11 @@ class MainWindow(QtWidgets.QMainWindow):
         #print(y2)
 
         print('NAME', self.imageName)
-        self.updateAnnotationFile(x1, x2, y1, y2, classColor, classCode)
+        self.updateAnnotationFile(x1, x2, y1, y2, classCode, None)
 
-    def updateAnnotationFile(self,x1,x2,y1,y2, classColor, classCode):
+    def updateAnnotationFile(self,x1,x2,y1,y2, classCode, locationCode):
 
+        classColor = COLORS[classCode]
 
  
         fileIndex = open(INDEX_FILE, "r")
@@ -402,7 +699,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 fileAnnotation = open(OUTPUT + "/" + self.imageName.replace(EXT, 'log'), "w")
                 fileAnnotation.write(str(self.imageName + '\n'))
-                fileAnnotation.write('classColor,x1,x2,y1,y2' + '\n')
+                fileAnnotation.write('classColor,x1,x2,y1,y2,location' + '\n')
                 #self.buttonRadioReview_clicked()
                 #self.buttonNext_clicked()
                 #self.buttonPrevious_clicked()
@@ -413,12 +710,19 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'log'), "w")
                 fileAnnotation.write(str(self.imageName + '\n'))
-                fileAnnotation.write('classColor,x1,x2,y1,y2' + '\n')
+                fileAnnotation.write('classColor,x1,x2,y1,y2,location' + '\n')
 
-        fileAnnotation.write(classColor + ',' + x1 + ',' + x2 + ',' + y1 + ',' + y2 + '\n')
+
+        #if self.currentAnnotationLocation is none set location to None if not set location to the value of LOCATIONS dictionary by currentAnnotationLocation key
+        if locationCode is None:
+            location = 'None'
+        else:
+            location = LOCATIONS[locationCode]
+
+        fileAnnotation.write(classColor + ',' + x1 + ',' + x2 + ',' + y1 + ',' + y2 + ',' + location + '\n')
         fileAnnotation.close()
 
-        # Update annotation file (yolo format)
+        # Update color annotation file (yolo format)
         # class x_center y_center width height
 
         if self.windowTitle()[6] == 'R':
@@ -453,6 +757,24 @@ class MainWindow(QtWidgets.QMainWindow):
         #fileAnnotation.write(str(classCode) + ' ' + x_center + ' ' + y_center + ' ' + width + ' ' + height + '\n')
         fileAnnotation.write(str(classCode) + ' ' + x_center_n + ' ' + y_center_n + ' ' + width_n + ' ' + height_n + '\n')
         fileAnnotation.close()
+
+
+        #make another file in yolo format for location with .loc.txt extension
+        if self.windowTitle()[6] == 'R':
+            if os.path.exists(OUTPUT + "/" + self.imageName.replace(EXT, 'loc.txt')):
+                fileAnnotation = open(OUTPUT + "/" + self.imageName.replace(EXT, 'loc.txt'), "a")
+            else:
+                fileAnnotation = open(OUTPUT + "/" + self.imageName.replace(EXT, 'loc.txt'), "w")
+        else:
+            if os.path.exists(OUTPUT + "/" + fichiers[index].replace(EXT, 'loc.txt')):
+                fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'loc.txt'), "a")
+            else:
+                fileAnnotation = open(OUTPUT + "/" + fichiers[index].replace(EXT, 'loc.txt'), "w")
+                #fileAnnotation.write(str(self.imageName + '\n'))
+        #retain x_center_n, y_center_n, width_n, height_n
+        fileAnnotation.write(str(locationCode) + ' ' + x_center_n + ' ' + y_center_n + ' ' + width_n + ' ' + height_n + '\n')
+        fileAnnotation.close()
+
 
         #self.sc.figure.gca().clear()
         self.sc.figure.gca().axis('off')
@@ -500,6 +822,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #cancel defining annotation area
         self.cancelDefiningAnnotationArea()
+        self.clearAllAnnotations()
 
         self.index_file = INDEX_FILE
 
@@ -544,6 +867,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 # self.buttonPrevious_clicked()
         #else:
         self.reloadAnnotation()
+        
         self.sc.figure.gca().axis('off')
         self.sc.draw()
 
@@ -552,7 +876,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #cancel defining annotation area
         self.cancelDefiningAnnotationArea()
-
+        self.clearAllAnnotations()
         self.index_file = INDEX_FILE
 
         if self.windowTitle()[6] == 'R':
@@ -588,12 +912,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sc.figure.gca().clear()
         self.sc.figure.gca().imshow(image, cmap="gray")
         self.reloadAnnotation()
+
         self.sc.figure.gca().axis('off')
         self.sc.draw()
 
 
-    def buttonClear_clicked(self):
-        print("Button Clear clicked")
+    def clearAnnotationFiles(self):
         fileIndex = open(INDEX_FILE, "r")
         ###
         #if self.windowTitle()[6] == 'R':
@@ -611,6 +935,15 @@ class MainWindow(QtWidgets.QMainWindow):
             fileTxtToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'txt')
         if os.path.exists(fileTxtToDel):
             os.remove(fileTxtToDel)
+
+
+        if self.windowTitle()[6] == 'R':
+            fileTxtToDel = OUTPUT + "/" + self.imageName.replace(EXT, 'loc.txt')
+        else:
+            fileTxtToDel = OUTPUT + "/" + fichiers[index].replace(EXT, 'loc.txt')
+        if os.path.exists(fileTxtToDel):
+            os.remove(fileTxtToDel)
+
 
         if self.windowTitle()[6] == 'R':
             fileLogToDel = OUTPUT + "/" + self.imageName.replace(EXT, 'log')
@@ -633,16 +966,26 @@ class MainWindow(QtWidgets.QMainWindow):
         if os.path.exists(fileJpgToDel):
             os.remove(filePngToDel)
 
+
+
+    def buttonClear_clicked(self):
+        print("Button Clear clicked")
+        self.clearAllAnnotations()
+        self.clearAnnotationFiles()
+
         self.sc.figure.gca().clear()
         image = imread(INPUT + '/' + self.imageName)
         self.sc.figure.gca().imshow(image, cmap="gray")
+
+
+        
         self.reloadAnnotation()
         self.sc.figure.gca().axis('off')
         self.sc.draw()
 
 
     def updateProgressLabel(self,index):
-        self.progressLabel.setText(str(index) + "/" + str(len(fichiers)))
+        self.progressLabel.setText("Image: "+str(index) + "/" + str(len(fichiers)))
 
 
     def loadingFiles(self):
@@ -691,14 +1034,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.buttonNext_clicked()
         if e.key() == Qt.Key.Key_Space.value:
             self.buttonNext_clicked()
-        if e.key() == Qt.Key.Key_R.value:
-            self.buttonRedAnnotation_clicked()
-        if e.key() == Qt.Key.Key_O.value:
-            self.buttonOrangeAnnotation_clicked()
-        if e.key() == Qt.Key.Key_G.value:
-            self.buttonGreenAnnotation_clicked()
-        if e.key() == Qt.Key.Key_A.value:
-            self.buttonRedAnnotation_clicked()
         # if e.key() == Qt.Key.Key_Q.value:
             # self.buttonOrangeAnnotation_clicked()
         # if Z key pressed call start defining annotation area
@@ -711,6 +1046,21 @@ class MainWindow(QtWidgets.QMainWindow):
         if e.key() == Qt.Key.Key_C.value:
             self.buttonClear_clicked()
         
+
+        #bind A key to button rca clicked
+        if e.key() == Qt.Key.Key_A.value:
+            self.buttonRCA_clicked()
+        #bind S key to buttonLM_clicked
+        if e.key() == Qt.Key.Key_S.value:
+            self.buttonLM_clicked()
+        #bind D key to buttonLAD_clicked
+        if e.key() == Qt.Key.Key_D.value:
+            self.buttonLAD_clicked()
+        #bind F key to buttonLCx_clicked
+        if e.key() == Qt.Key.Key_F.value:
+            self.buttonCx_clicked()
+
+
 
         # same thing for w key but orange and 2
         if e.key() == Qt.Key.Key_W.value:
@@ -732,6 +1082,21 @@ class MainWindow(QtWidgets.QMainWindow):
             
         # if e.key() == Qt.Key.Key_W.value:
         #     self.buttonGreenAnnotation_clicked()
+
+        #connect button 3 to previous annotation button
+        if e.key() == Qt.Key.Key_3.value:
+            self.moveToPreviousAnnotation()
+        #if button up pressed do the same
+        if e.key() == Qt.Key.Key_Up.value:
+            self.moveToPreviousAnnotation()
+
+        #connect button 4 to next annotation button
+        if e.key() == Qt.Key.Key_4.value:
+            self.moveToNextAnnotation()
+        #if button down pressed do the same
+        if e.key() == Qt.Key.Key_Down.value:
+            self.moveToNextAnnotation()
+
 
 
 if __name__ == "__main__":
