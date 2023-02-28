@@ -17,8 +17,8 @@ from matplotlib import patches
 from PyQt6.QtCore import Qt
 
 INPUT = ''
-INPUT_A = '/Users/nedo/Documents/angioai/annotation/disease'
-INPUT_R = '/Users/nedo/Documents/angioai/annotation/disease'
+INPUT_A = '/Users/nedo/Documents/angioai/annotation/images'
+INPUT_R = '/Users/nedo/Documents/angioai/annotation/images'
 OUTPUT = '/Users/nedo/Documents/angioai/annotation/out'
 INDEX_FILE = '/Users/nedo/Documents/angioai/annotation/log/index.log'
 REVIEW_FILE = '/Users/nedo/Documents/angioai/annotation/log/review.log'
@@ -44,7 +44,7 @@ COLORS = {
 
 class MplCanvas(FigureCanvasQTAgg):
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, width=5, height=4, dpi=400):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
@@ -326,9 +326,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def updateCurrentAnnotationLocation(self,code):
-        self.currentAnnotationLocation = code
-        #update allAnnotations
-        self.allAnnotations[self.currentAnnotationIndex][5] = code
+        if self.currentAnnotationIndex is not None:
+            self.currentAnnotationLocation = code
+            #update allAnnotations
+            self.allAnnotations[self.currentAnnotationIndex][5] = code
 
 
     #set current annotation label to current annotation number (index + 1) / total number of annotations
@@ -603,24 +604,28 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #move to next annotation and if reach end of allAnnotations start with the first one
     def moveToNextAnnotation(self):
-        if self.currentAnnotationIndex < len(self.allAnnotations) - 1:
-            self.currentAnnotationIndex += 1
-        else:
-            self.currentAnnotationIndex = 0
+        if self.currentAnnotationIndex is not None:
 
-        #highlight the current annotation
-        self.updateCurrentAnnotationLabels()
-        self.highlightCurrentAnnotation()
+            if self.currentAnnotationIndex < len(self.allAnnotations) - 1:
+                self.currentAnnotationIndex += 1
+            else:
+                self.currentAnnotationIndex = 0
+
+            #highlight the current annotation
+            self.updateCurrentAnnotationLabels()
+            self.highlightCurrentAnnotation()
 
 
     #move to previous annotation and if reach start of allAnnotations start with the last one
     def moveToPreviousAnnotation(self):
-        if self.currentAnnotationIndex > 0:
-            self.currentAnnotationIndex -= 1
-        else:
-            self.currentAnnotationIndex = len(self.allAnnotations) - 1
-        self.updateCurrentAnnotationLabels()
-        self.highlightCurrentAnnotation()
+        if self.currentAnnotationIndex is not None:
+
+            if self.currentAnnotationIndex > 0:
+                self.currentAnnotationIndex -= 1
+            else:
+                self.currentAnnotationIndex = len(self.allAnnotations) - 1
+            self.updateCurrentAnnotationLabels()
+            self.highlightCurrentAnnotation()
 
 
     
@@ -1050,14 +1055,32 @@ class MainWindow(QtWidgets.QMainWindow):
         #bind A key to button rca clicked
         if e.key() == Qt.Key.Key_A.value:
             self.buttonRCA_clicked()
+        
+        #same for button 7 
+        if e.key() == Qt.Key.Key_7.value:
+            self.buttonRCA_clicked()
+
         #bind S key to buttonLM_clicked
         if e.key() == Qt.Key.Key_S.value:
             self.buttonLM_clicked()
+        #same for button 6
+        if e.key() == Qt.Key.Key_6.value:
+            self.buttonLM_clicked()
+
         #bind D key to buttonLAD_clicked
         if e.key() == Qt.Key.Key_D.value:
             self.buttonLAD_clicked()
+
+        #bind D key to buttonLAD_clicked
+        if e.key() == Qt.Key.Key_9.value:
+            self.buttonLAD_clicked()
+        
         #bind F key to buttonLCx_clicked
         if e.key() == Qt.Key.Key_F.value:
+            self.buttonCx_clicked()
+
+            #same for button 0
+        if e.key() == Qt.Key.Key_0.value:
             self.buttonCx_clicked()
 
 
